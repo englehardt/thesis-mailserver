@@ -31,8 +31,9 @@ public class MailServer extends SMTPServer {
 		@Override
 		public void deliver(String from, String recipient, InputStream data)
 			throws TooMuchDataException, IOException {
-			logger.info("DELIVER:\n{}\n{}", from, recipient);
-			handler.handleMessage(from, recipient, streamToString(data));
+			String content = streamToString(data);
+			logger.info("DELIVER:\n{}\n{}\n{}", from, recipient, content);
+			handler.handleMessage(from, recipient, content);
 		}
 
 		/** Reads the input stream and returns the data as a string. */

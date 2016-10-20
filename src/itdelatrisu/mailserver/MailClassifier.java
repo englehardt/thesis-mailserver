@@ -1,13 +1,5 @@
 package itdelatrisu.mailserver;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.Properties;
-
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,23 +9,30 @@ import org.slf4j.LoggerFactory;
 public class MailClassifier {
 	private static final Logger logger = LoggerFactory.getLogger(MailClassifier.class);
 
-	public MailClassifier() {}
-
-	/** Handles the message. */
-	public void handleMessage(String from, String recipient, String data) {
-		// TODO
-		MimeMessage message = null;
-		try {
-			message = toMimeMessage(data);
-		} catch (MessagingException e) {
-			logger.error("Failed to parse message.", e);
+	/** Classification result. */
+	public static class ClassificationResult {
+		private final String affiliation;
+		private final boolean isSpam;
+		public ClassificationResult(String affiliation, boolean isSpam) {
+			this.affiliation = affiliation;
+			this.isSpam = isSpam;
 		}
+
+		/** Returns the sender affiliation. */
+		public String getAffiliation() { return affiliation; }
+
+		/** Returns whether this is spam. */
+		public boolean isSpam() { return isSpam; }
 	}
 
-	/** Parses mail data into a MimeMessage. */
-	private MimeMessage toMimeMessage(String content) throws MessagingException {
-		Session s = Session.getDefaultInstance(new Properties());
-		InputStream is = new ByteArrayInputStream(content.getBytes());
-		return new MimeMessage(s, is);
+	public MailClassifier() {}
+
+	/** Classifies the message. */
+	public ClassificationResult classify(String from, String recipient, String data, MailDB db) {
+		// TODO
+		// Read `register_site` for recipient, compare to sender
+		String affiliation = null;
+		boolean isSpam = false;
+		return new ClassificationResult(affiliation, isSpam);
 	}
 }
