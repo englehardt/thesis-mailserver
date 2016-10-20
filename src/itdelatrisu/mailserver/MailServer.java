@@ -24,7 +24,7 @@ public class MailServer extends SMTPServer {
 
 		@Override
 		public boolean accept(String from, String recipient) {
-			logger.info("ACCEPT:\n{}\n{}", from, recipient);
+			logger.info("ACCEPT: {} -> {}", from, recipient);
 			return true;
 		}
 
@@ -32,7 +32,7 @@ public class MailServer extends SMTPServer {
 		public void deliver(String from, String recipient, InputStream data)
 			throws TooMuchDataException, IOException {
 			String content = streamToString(data);
-			logger.info("DELIVER:\n{}\n{}\n{}", from, recipient, content);
+			logger.info("DELIVER: {} -> {}\n{}", from, recipient, content);
 			handler.handleMessage(from, recipient, content);
 		}
 
