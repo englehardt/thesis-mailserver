@@ -6,11 +6,15 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Database connection manager.
  */
 public class MailDB {
+	private static final Logger logger = LoggerFactory.getLogger(MailDB.class);
+
 	private final BasicDataSource dataSource;
 
 	/** Initializes the connection pool. */
@@ -51,6 +55,26 @@ public class MailDB {
 			stmt.setBoolean(6, isSpam);
 			stmt.setString(7, filename);
 			stmt.executeUpdate();
+		}
+	}
+
+	/** Adds a mail user to the database, and returns false if the user already existed. */
+	public boolean addMailUser(String email, String site, String url) throws SQLException {
+		try (
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement(
+				"INSERT IGNORE INTO `users` (`email`, `register_site`, `register_url`) VALUES(?, ?, ?)"
+			);
+		) {
+			stmt.setString(1, email);
+			stmt.setString(2, site);
+			stmt.setString(3, url);
+			int rows = stmt.executeUpdate();
+			if (rows > 0) {
+				logger.error("Created user {} for site '{}' at URL '{}'.", email, site, url);
+				return true;
+			} else
+				return false;
 		}
 	}
 }
