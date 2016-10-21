@@ -20,15 +20,26 @@ import org.slf4j.LoggerFactory;
 public class MailHandler {
 	private static final Logger logger = LoggerFactory.getLogger(MailHandler.class);
 
+	private final MailDB db;
 	private final MailClassifier classifier;
 	private final MailStorage storage;
-	private final MailDB db;
 
 	/** Creates the mail handler. */
-	public MailHandler() {
-		storage = new MailStorage();
-		classifier = new MailClassifier();
-		db = new MailDB();
+	public MailHandler(MailDB db) {
+		this.db = db;
+		this.storage = new MailStorage();
+		this.classifier = new MailClassifier();
+	}
+
+	/** Returns whether to accept or reject this message. */
+	public boolean accept(String from, String recipient) {
+		// reject if email address not in database
+		try {
+			return db.userExists(recipient);
+		} catch (SQLException e) {
+			logger.error("Failed to query database.", e);
+		}
+		return true;
 	}
 
 	/** Handles the message. */

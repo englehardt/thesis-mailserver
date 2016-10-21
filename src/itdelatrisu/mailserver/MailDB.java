@@ -3,18 +3,15 @@ package itdelatrisu.mailserver;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Database connection manager.
  */
 public class MailDB {
-	private static final Logger logger = LoggerFactory.getLogger(MailDB.class);
-
 	private final BasicDataSource dataSource;
 
 	/** Initializes the connection pool. */
@@ -70,11 +67,23 @@ public class MailDB {
 			stmt.setString(2, site);
 			stmt.setString(3, url);
 			int rows = stmt.executeUpdate();
-			if (rows > 0) {
-				logger.error("Created user {} for site '{}' at URL '{}'.", email, site, url);
-				return true;
-			} else
-				return false;
+			return rows > 0;
+		}
+	}
+
+	/** Returns whether the given user exists. */
+	public boolean userExists(String email) throws SQLException {
+		try (
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement(
+				"SELECT EXISTS(SELECT 1 FROM `users` WHERE `email` = ?)"
+			);
+		) {
+			stmt.setString(1, email);
+			stmt.executeQuery();
+			try (ResultSet rs = stmt.executeQuery()) {
+				return rs.next() ? rs.getBoolean(1) : false;
+			}
 		}
 	}
 }

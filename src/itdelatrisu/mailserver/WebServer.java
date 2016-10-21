@@ -44,7 +44,7 @@ public class WebServer {
 				String email = String.format("%s@%s", id, domain);
 				try {
 					if (db.addMailUser(email, site, url)) {
-						logger.info("Created new user {}.");
+						logger.info("Created new user {}.", email);
 						return email;
 					}
 				} catch (SQLException e) {

@@ -18,7 +18,7 @@ public class Launcher {
 		MailDB db = new MailDB();
 
 		// start mail server
-		MailServer mailServer = new MailServer();
+		MailServer mailServer = new MailServer(db);
 		mailServer.start();
 		logger.info("Mail server running on port {}.", mailServer.getPort());
 

@@ -20,12 +20,12 @@ public class MailServer extends SMTPServer {
 	/** SMTP message listener. */
 	private static class MessageListener implements SimpleMessageListener {
 		private final MailHandler handler;
-		public MessageListener() { handler = new MailHandler(); }
+		public MessageListener(MailDB db) { handler = new MailHandler(db); }
 
 		@Override
 		public boolean accept(String from, String recipient) {
 			logger.info("ACCEPT: {} -> {}", from, recipient);
-			return true;
+			return handler.accept(from, recipient);
 		}
 
 		@Override
@@ -45,7 +45,7 @@ public class MailServer extends SMTPServer {
 	}
 
 	/** Creates the SMTP server. */
-	public MailServer() {
-		super(new SimpleMessageListenerAdapter(new MessageListener()));
+	public MailServer(MailDB db) {
+		super(new SimpleMessageListenerAdapter(new MessageListener(db)));
 	}
 }

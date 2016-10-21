@@ -1,14 +1,9 @@
 package itdelatrisu.mailserver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Classifier for incoming mail.
  */
 public class MailClassifier {
-	private static final Logger logger = LoggerFactory.getLogger(MailClassifier.class);
-
 	/** Classification result. */
 	public static class ClassificationResult {
 		private final String affiliation;
