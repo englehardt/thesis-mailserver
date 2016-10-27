@@ -1,10 +1,11 @@
 package itdelatrisu.mailserver;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 
@@ -32,7 +33,7 @@ public class MailDB {
 	public void addMailEntry(
 		String recipient,
 		String sender,
-		java.util.Date sentDate,
+		Date sentDate,
 		String subject,
 		String affiliation,
 		boolean isSpam,
@@ -46,7 +47,7 @@ public class MailDB {
 		) {
 			stmt.setString(1, recipient);
 			stmt.setString(2, sender);
-			stmt.setDate(3, sentDate == null ? null : new Date(sentDate.getTime()));
+			stmt.setTimestamp(3, sentDate == null ? null : new Timestamp(sentDate.getTime()));
 			stmt.setString(4, subject);
 			stmt.setString(5, affiliation);
 			stmt.setBoolean(6, isSpam);
