@@ -1,7 +1,6 @@
 package itdelatrisu.mailserver;
 
 import java.sql.SQLException;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,16 +8,21 @@ import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
 import spark.Spark;
 
+/**
+ * Web server.
+ */
 public class WebServer {
 	private static final Logger logger = LoggerFactory.getLogger(WebServer.class);
 
 	private final MailDB db;
+	private final EmailAddressGenerator generator;
 	private final String domain;
 	private final int port;
 
 	/** Initializes the web server. */
 	public WebServer(MailDB db, String domain) {
 		this.db = db;
+		this.generator = new EmailAddressGenerator();
 		this.domain = domain;
 		this.port = 8080;
 		Spark.port(port);
@@ -38,10 +42,9 @@ public class WebServer {
 			logger.info("/request: {} - {}", site, url);
 
 			// generate an email address
-			int retries = 3;  // in case UUID generation fails
+			int retries = 3;  // in case generator picks a duplicate
 			while (retries-- > 0) {
-				String id = UUID.randomUUID().toString().replaceAll("-", "");
-				String email = String.format("%s@%s", id, domain);
+				String email = generator.generate(domain);
 				try {
 					if (db.addMailUser(email, site, url)) {
 						logger.info("Created new user {}.", email);

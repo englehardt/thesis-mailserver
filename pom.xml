@@ -15,6 +15,7 @@
 				<directory>src/resources</directory>
 				<includes>
 					<include>log4j.properties</include>
+					<include>**/*.txt</include>
 				</includes>
 			</resource>
 		</resources>
