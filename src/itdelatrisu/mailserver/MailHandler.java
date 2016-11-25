@@ -1,14 +1,10 @@
 package itdelatrisu.mailserver;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.Properties;
 
 import javax.mail.MessagingException;
-import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
 import org.slf4j.Logger;
@@ -54,7 +50,7 @@ public class MailHandler {
 		String subject = null;
 		Date sentDate = null;
 		try {
-			MimeMessage message = toMimeMessage(data);
+			MimeMessage message = Utils.toMimeMessage(data);
 			subject = message.getSubject();
 			sentDate = message.getSentDate();
 		} catch (MessagingException e) {
@@ -65,12 +61,5 @@ public class MailHandler {
 		} catch (SQLException e) {
 			logger.error("Failed to log message to database.", e);
 		}
-	}
-
-	/** Parses mail data into a MimeMessage. */
-	private MimeMessage toMimeMessage(String content) throws MessagingException {
-		Session s = Session.getDefaultInstance(new Properties());
-		InputStream is = new ByteArrayInputStream(content.getBytes());
-		return new MimeMessage(s, is);
 	}
 }

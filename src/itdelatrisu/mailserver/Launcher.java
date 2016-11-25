@@ -11,6 +11,9 @@ public class Launcher {
 	private static final String DOMAIN_NAME = "lorveskel.me";
 
 	public static void main(String[] args) {
+		// allow multipart messages with no body parts
+		System.setProperty("mail.mime.multipart.allowempty", "true");
+
 		String domain = DOMAIN_NAME;
 		logger.info("Initializing for domain [{}]...", domain);
 

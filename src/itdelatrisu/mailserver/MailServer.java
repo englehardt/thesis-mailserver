@@ -2,7 +2,6 @@ package itdelatrisu.mailserver;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Scanner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,16 +30,9 @@ public class MailServer extends SMTPServer {
 		@Override
 		public void deliver(String from, String recipient, InputStream data)
 			throws TooMuchDataException, IOException {
-			String content = streamToString(data);
+			String content = Utils.streamToString(data);
 			logger.info("DELIVER: {} -> {}\n{}", from, recipient, content);
 			handler.handleMessage(from, recipient, content);
-		}
-
-		/** Reads the input stream and returns the data as a string. */
-		private String streamToString(InputStream is) {
-			try (Scanner s = new Scanner(is)) {
-				return s.useDelimiter("\\A").hasNext() ? s.next() : "";
-			}
 		}
 	}
 
