@@ -4,7 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Scanner;
@@ -52,6 +55,11 @@ public class Utils {
 		try (Scanner s = new Scanner(is)) {
 			return s.useDelimiter("\\A").hasNext() ? s.next() : "";
 		}
+	}
+
+	/** Reads the file and returns the data as a string. */
+	public static String fileToString(String path, Charset encoding) throws IOException {
+		return new String(Files.readAllBytes(Paths.get(path)), encoding);
 	}
 
 	/** Parses mail data into a MimeMessage. */
