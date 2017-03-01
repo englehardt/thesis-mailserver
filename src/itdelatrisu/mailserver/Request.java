@@ -29,10 +29,13 @@ public class Request {
 	private final URL url;
 
 	/** The list of redirects. */
-	private final List<String> redirects;
+	private final List<URL> redirects;
 
 	/** The list of cookies. */
 	private final List<HttpCookie> cookies;
+
+	/** The last HTTP response code received. */
+	private int status = -1;
 
 	/**
 	 * Thread-local cookie store.
@@ -65,18 +68,21 @@ public class Request {
 	 */
 	public Request(String url) throws MalformedURLException {
 		this.url = new URL(url);
-		this.redirects = new ArrayList<String>();
+		this.redirects = new ArrayList<URL>();
 		this.cookies = new ArrayList<HttpCookie>();
 	}
 
 	/** Returns the requested URL. */
-	public String getURL() { return url.toString(); }
+	public URL getURL() { return url; }
 
 	/** Returns the list of redirects. */
-	public List<String> getRedirects() { return redirects; }
+	public List<URL> getRedirects() { return redirects; }
 
 	/** Returns the list of cookies. */
 	public List<HttpCookie> getCookies() { return cookies; }
+
+	/** Returns the last HTTP response code received. */
+	public int getResponseCode() { return status; }
 
 	/** Requests the URL.  */
 	public void go() throws IOException {
@@ -99,7 +105,7 @@ public class Request {
 			conn.setRequestProperty("Referer", "https://mail.google.com/mail/u/0/");
 
 			// check for redirects
-			int status = conn.getResponseCode();
+			status = conn.getResponseCode();
 			if (status != HttpURLConnection.HTTP_MOVED_TEMP && status != HttpURLConnection.HTTP_MOVED_PERM &&
 			    status != HttpURLConnection.HTTP_SEE_OTHER && status != HttpURLConnection.HTTP_USE_PROXY) {
 				conn.disconnect();
@@ -121,8 +127,8 @@ public class Request {
 
 			// follow redirect
 			requestURL = target;
+			redirects.add(target);
 			redirectCount++;
-			redirects.add(target.toString());
 		}
 
 		// store new cookies
