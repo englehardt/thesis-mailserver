@@ -111,6 +111,8 @@ public class LinkExtractor {
 		// media
 		for (Element src : doc.select("[src]")) {
 			String url = src.attr("abs:src");
+			if (!url.startsWith("http"))
+				continue;
 			if (src.tagName().equals("img")) {
 				String width = src.attr("width").trim(), height = src.attr("height").trim();
 				inlineImages.add(new Image(url, width, height));
@@ -122,6 +124,8 @@ public class LinkExtractor {
 		// imports
 		for (Element link : doc.select("link[href]")) {
 			String url = link.attr("abs:href");
+			if (!url.startsWith("http"))
+				continue;
 			imports.add(url);
 			links.add(url);
 		}
@@ -129,6 +133,8 @@ public class LinkExtractor {
 		// links
 		for (Element link : doc.select("a[href]")) {
 			String url = link.attr("abs:href");
+			if (!url.startsWith("http"))
+				continue;
 			inlineLinks.add(url);
 			links.add(url);
 		}
@@ -146,8 +152,12 @@ public class LinkExtractor {
 		List<String> list = new ArrayList<String>();
 		Pattern pattern = Pattern.compile("url\\((?!['\"]?(?:data):)['\"]?([^'\"\\)]*)['\"]?\\)");
 		Matcher matcher = pattern.matcher(css);
-		while (matcher.find())
-			list.add(matcher.group(1));
+		while (matcher.find()) {
+			String url = matcher.group(1).trim();
+			if (!url.startsWith("http"))
+				continue;
+			list.add(url);
+		}
 		return list;
 	}
 }
