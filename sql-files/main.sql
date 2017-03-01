@@ -18,8 +18,6 @@ CREATE TABLE IF NOT EXISTS `inbox` (
 	`sender` VARCHAR(254) NOT NULL COMMENT 'mail sender',
 	`sent_date` DATETIME COMMENT 'mail sent date',
 	`subject` TEXT COMMENT 'mail subject',
-	`affiliation` VARCHAR(255) COMMENT 'inferred sender affiliation',
-	`is_spam` TINYINT(1) COMMENT 'inferred spam flag',
 	`filename` VARCHAR(255) NOT NULL COMMENT 'file location',
 	PRIMARY KEY (`recipient`, `filename`)
 ) ENGINE=MyISAM;

@@ -35,23 +35,19 @@ public class MailDB {
 		String sender,
 		Date sentDate,
 		String subject,
-		String affiliation,
-		boolean isSpam,
 		String filename
 	) throws SQLException {
 		try (
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-				"INSERT INTO `inbox` VALUES(?, ?, ?, ?, ?, ?, ?)"
+				"INSERT INTO `inbox` VALUES(?, ?, ?, ?, ?)"
 			);
 		) {
 			stmt.setString(1, recipient);
 			stmt.setString(2, sender);
 			stmt.setTimestamp(3, sentDate == null ? null : new Timestamp(sentDate.getTime()));
 			stmt.setString(4, subject);
-			stmt.setString(5, affiliation);
-			stmt.setBoolean(6, isSpam);
-			stmt.setString(7, filename);
+			stmt.setString(5, filename);
 			stmt.executeUpdate();
 		}
 	}
