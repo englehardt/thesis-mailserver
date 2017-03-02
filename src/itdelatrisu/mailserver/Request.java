@@ -7,6 +7,7 @@ import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -105,7 +106,11 @@ public class Request {
 			conn.setRequestProperty("Referer", "https://mail.google.com/mail/u/0/");
 
 			// check for redirects
-			status = conn.getResponseCode();
+			try {
+				status = conn.getResponseCode();
+			} catch (SocketTimeoutException e) {
+				break;  // read timed out
+			}
 			if (status != HttpURLConnection.HTTP_MOVED_TEMP && status != HttpURLConnection.HTTP_MOVED_PERM &&
 			    status != HttpURLConnection.HTTP_SEE_OTHER && status != HttpURLConnection.HTTP_USE_PROXY) {
 				conn.disconnect();

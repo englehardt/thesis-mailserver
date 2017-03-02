@@ -1,8 +1,6 @@
 package itdelatrisu.mailserver;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -52,7 +50,7 @@ public class MailAnalyzer {
 
 				return req;
 			} catch (Exception e) {
-				logger.error("Error during request.", e);
+				logger.error(String.format("Error raised during request for [%s].", req.getURL().toString()), e);
 				throw e;
 			}
 		}
@@ -111,7 +109,7 @@ public class MailAnalyzer {
 					pool.schedule(task, TASK_SCHEDULE_DELAY, TimeUnit.MILLISECONDS);
 				} catch (MalformedURLException e) {}
 			}
-		} catch (MessagingException | IOException | SQLException e) {
+		} catch (Exception e) {
 			logger.error("Failed to request tracking images.", e);
 		}
 	}
