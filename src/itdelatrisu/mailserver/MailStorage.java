@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
+import java.util.Date;
 
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -22,17 +24,19 @@ import org.slf4j.LoggerFactory;
 public class MailStorage {
 	private static final Logger logger = LoggerFactory.getLogger(MailStorage.class);
 
+	private final MailDB db;
 	private final File mailDir;
 
 	/** Initializes the storage module. */
-	public MailStorage() {
-		mailDir = new File("mail");
+	public MailStorage(MailDB db) {
+		this.db = db;
+		this.mailDir = new File("mail");
 		if (!mailDir.isDirectory() && !mailDir.mkdirs())
 			logger.error("Failed to create root mail directory '{}'.", mailDir.getAbsolutePath());
 	}
 
-	/** Stores the message and returns the newly-created file. */
-	public File store(String from, String recipient, String data) {
+	/** Stores the message. */
+	public void store(String from, String recipient, String data) {
 		// {root_mail_dir}/{recipient}/{timestamp}.eml
 		File dir = new File(mailDir, Utils.cleanFileName(recipient, '_'));
 		if (!dir.isDirectory() && !dir.mkdirs()) {
@@ -49,7 +53,21 @@ public class MailStorage {
 			logger.error("Failed to write email to disk.", e);
 		}
 
-		return file;
+		// write mail entry into database
+		String subject = null;
+		Date sentDate = null;
+		try {
+			MimeMessage message = Utils.toMimeMessage(data);
+			subject = message.getSubject();
+			sentDate = message.getSentDate();
+		} catch (MessagingException e) {
+			logger.error("Failed to parse message.", e);
+		}
+		try {
+			db.addMailEntry(recipient, from, sentDate, subject, file.getName());
+		} catch (SQLException e) {
+			logger.error("Failed to log message to database.", e);
+		}
 	}
 
 	/** Strips attachments in the given message. */

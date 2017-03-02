@@ -75,10 +75,10 @@ public class Request {
 	/** Returns the requested URL. */
 	public URL getURL() { return url; }
 
-	/** Returns the list of redirects. */
+	/** Returns the list of redirects, in the order that they occurred. */
 	public List<URL> getRedirects() { return redirects; }
 
-	/** Returns the list of cookies. */
+	/** Returns the list of cookies (in no particular order). */
 	public List<HttpCookie> getCookies() { return cookies; }
 
 	/** Returns the last HTTP response code received. */

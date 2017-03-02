@@ -21,3 +21,16 @@ CREATE TABLE IF NOT EXISTS `inbox` (
 	`filename` VARCHAR(255) NOT NULL COMMENT 'file location',
 	PRIMARY KEY (`recipient`, `filename`)
 ) ENGINE=MyISAM;
+
+---
+--- Table structure for table `redirects`
+---
+CREATE TABLE IF NOT EXISTS `redirects` (
+	`sender_domain` VARCHAR(255) NOT NULL COMMENT 'domain of email sender',
+	`sender_address` VARCHAR(254) NOT NULL COMMENT 'mail sender',
+	`recipient_address` VARCHAR(254) NOT NULL COMMENT 'mail recipient',
+	`request_url` VARCHAR(2048) NOT NULL COMMENT 'URL of the original request',
+	`redirect_domain` VARCHAR(255) NOT NULL COMMENT 'domain of the redirected site',
+	`redirect_url` VARCHAR(2048) NOT NULL COMMENT 'URL of the redirected site',
+	`redirect_index` INT(11) UNSIGNED NOT NULL COMMENT 'index in the redirect chain'
+) ENGINE=MyISAM;

@@ -1,11 +1,6 @@
 package itdelatrisu.mailserver;
 
-import java.io.File;
 import java.sql.SQLException;
-import java.util.Date;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +13,13 @@ public class MailHandler {
 
 	private final MailDB db;
 	private final MailStorage storage;
+	private final MailAnalyzer analyzer;
 
 	/** Creates the mail handler. */
 	public MailHandler(MailDB db) {
 		this.db = db;
-		this.storage = new MailStorage();
+		this.storage = new MailStorage(db);
+		this.analyzer = new MailAnalyzer(db);
 	}
 
 	/** Returns whether to accept or reject this message. */
@@ -39,22 +36,9 @@ public class MailHandler {
 	/** Handles the message. */
 	public void handleMessage(String from, String recipient, String data) {
 		// store mail on disk
-		File file = storage.store(from, recipient, data);
+		storage.store(from, recipient, data);
 
-		// write mail entry into database
-		String subject = null;
-		Date sentDate = null;
-		try {
-			MimeMessage message = Utils.toMimeMessage(data);
-			subject = message.getSubject();
-			sentDate = message.getSentDate();
-		} catch (MessagingException e) {
-			logger.error("Failed to parse message.", e);
-		}
-		try {
-			db.addMailEntry(recipient, from, sentDate, subject, file.getName());
-		} catch (SQLException e) {
-			logger.error("Failed to log message to database.", e);
-		}
+		// analyze mail
+		analyzer.analyze(from, recipient, data);
 	}
 }
