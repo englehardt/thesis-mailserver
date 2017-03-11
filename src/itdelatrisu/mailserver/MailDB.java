@@ -1,12 +1,13 @@
 package itdelatrisu.mailserver;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -18,13 +19,44 @@ import org.apache.commons.dbcp2.BasicDataSource;
 public class MailDB {
 	private final BasicDataSource dataSource;
 
+	/** Represents a mail user. */
+	public class MailUser {
+		private final int id;
+		private final String email, site, url;
+		private final Date ts;
+
+		/** Constructor. */
+		public MailUser(int id, String email, String site, String url, Date ts) {
+			this.id = id;
+			this.email = email;
+			this.site = site;
+			this.url = url;
+			this.ts = ts;
+		}
+
+		/** Returns the unique user ID. */
+		public int getId() { return id; }
+
+		/** Returns the unique email address. */
+		public String getEmail() { return email; }
+
+		/** Returns the registration site title. */
+		public String getRegistrationSiteTitle() { return site; }
+
+		/** Returns the registration site URL. */
+		public String getRegistrationSiteUrl() { return url; }
+
+		/** Returns the registration date. */
+		public Date getRegistrationDate() { return ts; }
+	}
+
 	/** Initializes the connection pool. */
-	public MailDB() {
+	public MailDB(String driver, String url, String username, String password) {
 		dataSource = new BasicDataSource();
-		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-		dataSource.setUrl("jdbc:mysql://localhost:3306/mail");
-		dataSource.setUsername("mailserver");
-		dataSource.setPassword("S6TTAykTfAEMJjqN");
+		dataSource.setDriverClassName(driver);
+		dataSource.setUrl(url);
+		dataSource.setUsername(username);
+		dataSource.setPassword(password);
 	}
 
 	/** Returns a database connection. */
@@ -60,7 +92,7 @@ public class MailDB {
 		Request req,
 		String senderDomain,
 		String senderAddress,
-		String recipientAddress
+		int recipientId
 	) throws SQLException {
 		if (req.getRedirects().isEmpty())
 			return;
@@ -75,13 +107,38 @@ public class MailDB {
 			for (int i = 0; i < redirects.size(); i++) {
 				stmt.setString(1, senderDomain);
 				stmt.setString(2, senderAddress);
-				stmt.setString(3, recipientAddress);
+				stmt.setInt(3, recipientId);
 				stmt.setString(4, requestUrl);
 				stmt.setString(5, redirects.get(i).getHost());
 				stmt.setString(6, redirects.get(i).toString());
 				stmt.setInt(7, i + 1);
 				stmt.executeUpdate();
 			}
+		}
+	}
+
+	/** Adds a URL containing an email address to the database. */
+	public void addLeakedEmailAddress(
+		String url,
+		String encoding,
+		boolean isRedirect,
+		String senderDomain,
+		String senderAddress,
+		int recipientId
+	) throws SQLException {
+		try (
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement(
+				"INSERT INTO `leaked_emails` VALUES(?, ?, ?, ?, ?, ?)"
+			);
+		) {
+			stmt.setString(1, senderDomain);
+			stmt.setString(2, senderAddress);
+			stmt.setInt(3, recipientId);
+			stmt.setString(4, encoding);
+			stmt.setString(5, url);
+			stmt.setBoolean(6, isRedirect);
+			stmt.executeUpdate();
 		}
 	}
 
@@ -117,21 +174,35 @@ public class MailDB {
 		}
 	}
 
-	/** Returns the registration domain for a user, or null if it does not exist. */
-	public String userRegisterDomain(String email) throws SQLException {
+	/** Returns user data for the given email address, or null if it does not exist. */
+	public MailUser getUserInfo(String email) throws SQLException {
 		try (
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-				"SELECT `register_url` FROM `users` WHERE `email` = ?"
+				"SELECT `id`, `register_site`, `register_url`, `register_time` FROM `users` WHERE `email` = ?"
 			);
 		) {
 			stmt.setString(1, email);
 			stmt.executeQuery();
 			try (ResultSet rs = stmt.executeQuery()) {
-				return rs.next() ? new URL(rs.getString(1)).getHost() : null;
-			} catch (MalformedURLException e) {
-				return null;
+				return (!rs.next()) ? null : new MailUser(rs.getInt(1), email, rs.getString(2), rs.getString(3), rs.getTimestamp(4));
 			}
+		}
+	}
+
+	/** Returns a list of all user data. */
+	public List<MailUser> getUsers() throws SQLException {
+		try (
+			Connection connection = getConnection();
+			Statement stmt = connection.createStatement();
+		) {
+			String sql = "SELECT `id`, `email`, `register_site`, `register_url`, `register_time` FROM `users`";
+			List<MailUser> users = new ArrayList<MailUser>();
+			try (ResultSet rs = stmt.executeQuery(sql)) {
+				while (rs.next())
+					users.add(new MailUser(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5)));
+			}
+			return users;
 		}
 	}
 }

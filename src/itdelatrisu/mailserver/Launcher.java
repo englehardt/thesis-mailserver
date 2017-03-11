@@ -18,7 +18,12 @@ public class Launcher {
 		logger.info("Initializing for domain [{}]...", domain);
 
 		// get mail database instance
-		MailDB db = new MailDB();
+		MailDB db = new MailDB(
+			"com.mysql.jdbc.Driver",
+			"jdbc:mysql://localhost:3306/mail",
+			"mailserver",
+			"S6TTAykTfAEMJjqN"
+		);
 
 		// start mail server
 		MailServer mailServer = new MailServer(db);

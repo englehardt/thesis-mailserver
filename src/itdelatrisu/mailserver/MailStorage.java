@@ -38,7 +38,7 @@ public class MailStorage {
 	/** Stores the message. */
 	public void store(String from, String recipient, String data) {
 		// {root_mail_dir}/{recipient}/{timestamp}.eml
-		File dir = new File(mailDir, Utils.cleanFileName(recipient, '_'));
+		File dir = new File(mailDir, Utils.cleanFileName(recipient.toLowerCase(), '_'));
 		if (!dir.isDirectory() && !dir.mkdirs()) {
 			logger.error("Failed to create mail directory '{}'.", dir.getAbsolutePath());
 			dir = mailDir;

@@ -26,11 +26,23 @@ CREATE TABLE IF NOT EXISTS `inbox` (
 --- Table structure for table `redirects`
 ---
 CREATE TABLE IF NOT EXISTS `redirects` (
-	`sender_domain` VARCHAR(255) NOT NULL COMMENT 'domain of email sender',
+	`sender_domain` VARCHAR(255) NOT NULL COMMENT 'domain of mail sender',
 	`sender_address` VARCHAR(254) NOT NULL COMMENT 'mail sender',
-	`recipient_address` VARCHAR(254) NOT NULL COMMENT 'mail recipient',
+	`recipient_id` INT(11) UNSIGNED NOT NULL COMMENT 'mail recipient ID',
 	`request_url` VARCHAR(2048) NOT NULL COMMENT 'URL of the original request',
 	`redirect_domain` VARCHAR(255) NOT NULL COMMENT 'domain of the redirected site',
 	`redirect_url` VARCHAR(2048) NOT NULL COMMENT 'URL of the redirected site',
 	`redirect_index` INT(11) UNSIGNED NOT NULL COMMENT 'index in the redirect chain'
+) ENGINE=MyISAM;
+
+---
+--- Table structure for table `leaked_emails`
+---
+CREATE TABLE IF NOT EXISTS `leaked_emails` (
+	`sender_domain` VARCHAR(255) NOT NULL COMMENT 'domain of mail sender',
+	`sender_address` VARCHAR(254) NOT NULL COMMENT 'mail sender',
+	`recipient_id` INT(11) UNSIGNED NOT NULL COMMENT 'mail recipient ID',
+	`encoding` VARCHAR(64) NOT NULL COMMENT 'recipient address encoding',
+	`url` VARCHAR(2048) NOT NULL COMMENT 'URL containing the recipient address',
+	`is_redirect` TINYINT(1) NOT NULL COMMENT 'whether or not the URL was a redirect'
 ) ENGINE=MyISAM;

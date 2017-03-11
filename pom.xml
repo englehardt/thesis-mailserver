@@ -109,5 +109,12 @@
 			<artifactId>jsoup</artifactId>
 			<version>1.9.2</version>
 		</dependency>
+
+		<!-- Murmur Hash -->
+		<dependency>
+			<groupId>com.sangupta</groupId>
+			<artifactId>murmur</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 </project>
