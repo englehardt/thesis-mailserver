@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -28,6 +30,7 @@ public class MailAnalyzer {
 
 	private final MailDB db;
 	private final ScheduledExecutorService pool;
+	private final Random random;
 
 	/** Task for making requests to a URL. */
 	private class RequestTask implements Callable<Request> {
@@ -76,6 +79,7 @@ public class MailAnalyzer {
 	public MailAnalyzer(MailDB db) {
 		this.db = db;
 		this.pool = Executors.newScheduledThreadPool(MAX_REQUEST_THREADS);
+		this.random = new Random();
 	}
 
 	/** Analyzes the mail. */
@@ -132,23 +136,41 @@ public class MailAnalyzer {
 		try {
 			// make requests for:
 			// - images explicitly labeled as 1x1
-			// - URLs containing the recipient email address
+			// - URLs containing the recipient email address (raw or encoded)
+			// - 1 random other image
 			Set<String> requests = new HashSet<String>();
+			List<String> nonRequestedImages = new ArrayList<String>();
 			for (LinkExtractor.Image img : extractor.getInlineImages()) {
 				if (img.width.equals("1") && img.height.equals("1"))
 					requests.add(img.url);
 				else {
+					boolean added = false;
 					for (HashChecker.NamedValue<String> enc : encodings) {
 						if (img.url.contains(enc.getValue())) {
 							requests.add(img.url);
+							added = true;
 							break;
 						}
 					}
+					if (!added)
+						nonRequestedImages.add(img.url);
 				}
 			}
 			for (String img : extractor.getInlineCssImages()) {
-				if (img.contains(recipient))
-					requests.add(img);
+				boolean added = false;
+				for (HashChecker.NamedValue<String> enc : encodings) {
+					if (img.contains(enc.getValue())) {
+						requests.add(img);
+						added = true;
+						break;
+					}
+				}
+				if (!added)
+					nonRequestedImages.add(img);
+			}
+			if (!nonRequestedImages.isEmpty()) {
+				String img = nonRequestedImages.get(random.nextInt(nonRequestedImages.size()));
+				requests.add(img);
 			}
 			if (requests.isEmpty())
 				return;
