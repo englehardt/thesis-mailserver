@@ -1,14 +1,9 @@
 package itdelatrisu.mailserver;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Part;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -60,14 +55,6 @@ public class LinkExtractor {
 		extractLinksFromHtml(html);
 	}
 
-	/**
-	 * Extracts links from a MIME message.
-	 * @param message the MIME message
-	 */
-	public LinkExtractor(Part message) throws MessagingException, IOException {
-		extractLinksFromMessage(message);
-	}
-
 	/** Returns all extracted links. */
 	public List<String> getAllLinks() { return links; }
 
@@ -85,23 +72,6 @@ public class LinkExtractor {
 
 	/** Returns all other media (e.g. with 'src' keys, but not 'img' tags). */
 	public List<String> getMedia() { return media; }
-
-	/** Finds all links contained in the HTML sections of a MIME message. */
-	private void extractLinksFromMessage(Part message) throws MessagingException, IOException {
-		// html: parse and return
-		if (message.getContentType().startsWith("text/html")) {
-			extractLinksFromHtml((String) message.getContent());
-			return;
-		}
-
-		// multipart: recursively check parts for html
-		if (message.getContentType().startsWith("multipart/")) {
-			Multipart multipart = (Multipart) message.getContent();
-			for (int i = 0; i < multipart.getCount(); i++)
-				extractLinksFromMessage(multipart.getBodyPart(i));
-			return;
-		}
-	}
 
 	/** Finds all links contained in an HTML body. */
 	private void extractLinksFromHtml(String html) {

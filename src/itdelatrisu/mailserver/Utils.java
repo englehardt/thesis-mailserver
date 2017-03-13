@@ -13,6 +13,8 @@ import java.util.Properties;
 import java.util.Scanner;
 
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
@@ -75,5 +77,41 @@ public class Utils {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		message.writeTo(baos);
 		return baos.toString(StandardCharsets.UTF_8.name());
+	}
+
+	/** Returns the HTML section of a MIME message, or null if not found. */
+	public static String getHtmlFromMessage(MimeMessage message) throws MessagingException, IOException {
+		Part part = getPartFromMessage(message, "text/html");
+		/*
+		if (part == null && message.getHeader("Content-Type", null) == null) {
+			// if no "Content-Type" header present, try using "multipart/mixed"
+			// (as of 11/2016, Gmail didn't always add this header?)
+			try {
+				MimeMessage copy = new MimeMessage(message);
+				copy.setHeader("Content-Type", "multipart/mixed");
+				copy.saveChanges();
+				part = getPartFromMessage(copy, "text/html");
+			} catch (Exception e) {}
+		}
+		*/
+		return (part == null) ? null : (String) part.getContent();
+	}
+
+	/** Returns the specified Part (by MIME type) from the given message, or null if not found. */
+	private static Part getPartFromMessage(Part message, String contentType) throws MessagingException, IOException {
+		if (message.getContentType().startsWith(contentType))
+			return message;
+
+		// multipart message: recursively check parts
+		if (message.getContentType().startsWith("multipart/")) {
+			Multipart multipart = (Multipart) message.getContent();
+			for (int i = 0; i < multipart.getCount(); i++) {
+				Part part = getPartFromMessage(multipart.getBodyPart(i), contentType);
+				if (part != null)
+					return part;
+			}
+		}
+
+		return null;
 	}
 }

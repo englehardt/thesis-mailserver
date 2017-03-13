@@ -84,44 +84,44 @@ public class MailAnalyzer {
 
 	/** Analyzes the mail. */
 	public void analyze(String from, String recipient, String data) {
+		// extract HTML from the email
+		String html;
 		try {
 			MimeMessage message = Utils.toMimeMessage(data);
-
-			// extract URLs from the message
-			LinkExtractor extractor;
-			try {
-				extractor = new LinkExtractor(message);
-			} catch (IOException e) {
-				logger.error("Failed to extract links from email.", e);
-				return;
-			}
-
-			// get recipient's user info
-			int recipientId;
-			String senderDomain;
-			try {
-				MailDB.MailUser user = db.getUserInfo(recipient);
-				if (user == null) {
-					logger.error("No user entry for email '{}'.", recipient);
-					return;
-				}
-				recipientId = user.getId();
-				senderDomain = new URL(user.getRegistrationSiteUrl()).getHost();
-			} catch (SQLException | MalformedURLException e) {
-				logger.error("Failed to get user info for email '{}'.", recipient);
-				return;
-			}
-
-			// find leaked email addresses
-			List<HashChecker.NamedValue<String>> encodings = HashChecker.getEncodings(recipient);
-			for (String link : extractor.getAllLinks())
-				findLeakedEmailAddress(link, encodings, false, recipientId, senderDomain, from);
-
-			// request tracking images
-			requestTrackingImages(extractor, from, recipient, recipientId, senderDomain, encodings);
-		} catch (MessagingException e) {
+			html = Utils.getHtmlFromMessage(message);
+		} catch (MessagingException | IOException e) {
 			logger.error("Failed to parse message.", e);
+			return;
 		}
+		if (html == null)
+			return;
+
+		// extract URLs
+		LinkExtractor extractor = new LinkExtractor(html);
+
+		// get recipient's user info
+		int recipientId;
+		String senderDomain;
+		try {
+			MailDB.MailUser user = db.getUserInfo(recipient);
+			if (user == null) {
+				logger.error("No user entry for email '{}'.", recipient);
+				return;
+			}
+			recipientId = user.getId();
+			senderDomain = new URL(user.getRegistrationSiteUrl()).getHost();
+		} catch (SQLException | MalformedURLException e) {
+			logger.error("Failed to get user info for email '{}'.", recipient);
+			return;
+		}
+
+		// find leaked email addresses
+		List<HashChecker.NamedValue<String>> encodings = HashChecker.getEncodings(recipient);
+		for (String link : extractor.getAllLinks())
+			findLeakedEmailAddress(link, encodings, false, recipientId, senderDomain, from);
+
+		// request tracking images
+		requestTrackingImages(extractor, from, recipient, recipientId, senderDomain, encodings);
 	}
 
 	/** Makes requests for tracking images present in the message. */
