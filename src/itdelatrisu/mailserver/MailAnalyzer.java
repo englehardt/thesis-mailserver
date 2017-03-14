@@ -124,7 +124,7 @@ public class MailAnalyzer {
 			findLeakedEmailAddress(link.url, link.type.toString(), encodings, false, recipientId, senderDomain, from);
 
 		// request tracking images
-//		requestTrackingImages(extractor, from, recipient, recipientId, senderDomain, encodings);
+		requestTrackingImages(extractor, from, recipient, recipientId, senderDomain, encodings);
 	}
 
 	/** Makes requests for tracking images present in the message. */
