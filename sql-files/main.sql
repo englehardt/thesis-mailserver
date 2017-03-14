@@ -44,5 +44,6 @@ CREATE TABLE IF NOT EXISTS `leaked_emails` (
 	`recipient_id` INT(11) UNSIGNED NOT NULL COMMENT 'mail recipient ID',
 	`encoding` VARCHAR(64) NOT NULL COMMENT 'recipient address encoding',
 	`url` VARCHAR(2048) NOT NULL COMMENT 'URL containing the recipient address',
+	`url_type` VARCHAR(24) NOT NULL COMMENT 'type of URL',
 	`is_redirect` TINYINT(1) NOT NULL COMMENT 'whether or not the URL was a redirect'
 ) ENGINE=MyISAM;

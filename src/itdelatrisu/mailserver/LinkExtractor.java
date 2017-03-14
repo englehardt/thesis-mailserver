@@ -29,8 +29,29 @@ public class LinkExtractor {
 		}
 	}
 
+	/** Link data. */
+	public class Link {
+		/** URL. */
+		public final String url;
+
+		/** The URL type. */
+		public final LinkType type;
+
+		/** Creates a new link. */
+		public Link(String url, LinkType type) {
+			this.url = url;
+			this.type = type;
+		}
+	}
+
+	/** Link types. */
+	public enum LinkType {
+		IMAGE, LINK, MEDIA, IMPORT;
+		@Override public String toString() { return this.name().toLowerCase(); }
+	}
+
 	/** All links. */
-	private final List<String> links = new ArrayList<String>();
+	private final List<Link> links = new ArrayList<Link>();
 
 	/** All inline images (e.g. in 'img' tags). */
 	private final List<Image> inlineImages = new ArrayList<Image>();
@@ -56,7 +77,7 @@ public class LinkExtractor {
 	}
 
 	/** Returns all extracted links. */
-	public List<String> getAllLinks() { return links; }
+	public List<Link> getAllLinks() { return links; }
 
 	/** Returns all inline images (e.g. in 'img' tags). */
 	public List<Image> getInlineImages() { return inlineImages; }
@@ -86,9 +107,11 @@ public class LinkExtractor {
 			if (src.tagName().equals("img")) {
 				String width = src.attr("width").trim(), height = src.attr("height").trim();
 				inlineImages.add(new Image(url, width, height));
-			} else
+				links.add(new Link(url, LinkType.IMAGE));
+			} else {
 				media.add(url);
-			links.add(url);
+				links.add(new Link(url, LinkType.MEDIA));
+			}
 		}
 
 		// imports
@@ -97,7 +120,7 @@ public class LinkExtractor {
 			if (!url.startsWith("http"))
 				continue;
 			imports.add(url);
-			links.add(url);
+			links.add(new Link(url, LinkType.IMPORT));
 		}
 
 		// links
@@ -106,14 +129,15 @@ public class LinkExtractor {
 			if (!url.startsWith("http"))
 				continue;
 			inlineLinks.add(url);
-			links.add(url);
+			links.add(new Link(url, LinkType.LINK));
 		}
 
 		// css
 		for (Element css : doc.select("style")) {
 			List<String> cssLinks = extractLinksFromCSS(css.data());
 			inlineCssImages.addAll(cssLinks);
-			links.addAll(cssLinks);
+			for (String url : cssLinks)
+				links.add(new Link(url, LinkType.IMAGE));
 		}
 	}
 

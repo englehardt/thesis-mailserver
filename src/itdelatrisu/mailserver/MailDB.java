@@ -120,6 +120,7 @@ public class MailDB {
 	/** Adds a URL containing an email address to the database. */
 	public void addLeakedEmailAddress(
 		String url,
+		String type,
 		String encoding,
 		boolean isRedirect,
 		String senderDomain,
@@ -129,7 +130,7 @@ public class MailDB {
 		try (
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-				"INSERT INTO `leaked_emails` VALUES(?, ?, ?, ?, ?, ?)"
+				"INSERT INTO `leaked_emails` VALUES(?, ?, ?, ?, ?, ?, ?)"
 			);
 		) {
 			stmt.setString(1, senderDomain);
@@ -137,7 +138,8 @@ public class MailDB {
 			stmt.setInt(3, recipientId);
 			stmt.setString(4, encoding);
 			stmt.setString(5, url);
-			stmt.setBoolean(6, isRedirect);
+			stmt.setString(6, type);
+			stmt.setBoolean(7, isRedirect);
 			stmt.executeUpdate();
 		}
 	}

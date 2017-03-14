@@ -35,6 +35,7 @@ public class MailAnalyzer {
 	/** Task for making requests to a URL. */
 	private class RequestTask implements Callable<Request> {
 		private final Request req;
+		private final String urlType;
 		private final String senderDomain, senderAddress;
 		private final int recipientId;
 		private final List<HashChecker.NamedValue<String>> encodings;
@@ -42,12 +43,14 @@ public class MailAnalyzer {
 		/** Creates a new request task to request the given URL. */
 		public RequestTask(
 			String url,
+			String type,
 			String senderDomain,
 			String senderAddress,
 			int recipientId,
 			List<HashChecker.NamedValue<String>> encodings
 		) throws MalformedURLException {
 			this.req = new Request(url);
+			this.urlType = type;
 			this.senderDomain = senderDomain;
 			this.senderAddress = senderAddress;
 			this.recipientId = recipientId;
@@ -64,7 +67,7 @@ public class MailAnalyzer {
 				db.addRedirects(req, senderDomain, senderAddress, recipientId);
 				if (!req.getRedirects().isEmpty()) {
 					for (URL url : req.getRedirects())
-						findLeakedEmailAddress(url.toString(), encodings, true, recipientId, senderDomain, senderAddress);
+						findLeakedEmailAddress(url.toString(), urlType, encodings, true, recipientId, senderDomain, senderAddress);
 				}
 
 				return req;
@@ -117,11 +120,11 @@ public class MailAnalyzer {
 
 		// find leaked email addresses
 		List<HashChecker.NamedValue<String>> encodings = HashChecker.getEncodings(recipient);
-		for (String link : extractor.getAllLinks())
-			findLeakedEmailAddress(link, encodings, false, recipientId, senderDomain, from);
+		for (LinkExtractor.Link link : extractor.getAllLinks())
+			findLeakedEmailAddress(link.url, link.type.toString(), encodings, false, recipientId, senderDomain, from);
 
 		// request tracking images
-		requestTrackingImages(extractor, from, recipient, recipientId, senderDomain, encodings);
+//		requestTrackingImages(extractor, from, recipient, recipientId, senderDomain, encodings);
 	}
 
 	/** Makes requests for tracking images present in the message. */
@@ -178,7 +181,10 @@ public class MailAnalyzer {
 			// submit all requests
 			for (String url : requests) {
 				try {
-					RequestTask task = new RequestTask(url, senderDomain, from, recipientId, encodings);
+					RequestTask task = new RequestTask(
+						url, LinkExtractor.LinkType.IMAGE.toString(),
+						senderDomain, from, recipientId, encodings
+					);
 					pool.schedule(task, TASK_SCHEDULE_DELAY, TimeUnit.MILLISECONDS);
 				} catch (MalformedURLException e) {}
 			}
@@ -190,6 +196,7 @@ public class MailAnalyzer {
 	/** Finds leaked email addresses in the given URL. */
 	private void findLeakedEmailAddress(
 		String url,
+		String type,
 		List<HashChecker.NamedValue<String>> encodings,
 		boolean isRedirect,
 		int recipientId,
@@ -199,7 +206,7 @@ public class MailAnalyzer {
 		try {
 			for (HashChecker.NamedValue<String> enc : encodings) {
 				if (url.contains(enc.getValue()))
-					db.addLeakedEmailAddress(url, enc.getName(), isRedirect, senderDomain, senderAddress, recipientId);
+					db.addLeakedEmailAddress(url, type, enc.getName(), isRedirect, senderDomain, senderAddress, recipientId);
 			}
 		} catch (SQLException e) {
 			logger.error("Failed to record leaked email address.", e);
