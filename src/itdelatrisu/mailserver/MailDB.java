@@ -135,7 +135,7 @@ public class MailDB {
 		try (
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-				"INSERT INTO `leaked_emails` VALUES(?, ?, ?, ?, ?, ?, ?)"
+				"INSERT INTO `leaked_emails` VALUES(?, ?, ?, ?, ?, ?, ?, ?)"
 			);
 		) {
 			stmt.setString(1, senderDomain);
@@ -143,8 +143,13 @@ public class MailDB {
 			stmt.setInt(3, recipientId);
 			stmt.setString(4, encoding);
 			stmt.setString(5, url);
-			stmt.setString(6, type);
-			stmt.setBoolean(7, isRedirect);
+			try {
+				stmt.setString(6, Utils.getDomainName(url));
+			} catch (URISyntaxException e) {
+				stmt.setString(6, "");
+			}
+			stmt.setString(7, type);
+			stmt.setBoolean(8, isRedirect);
 			stmt.executeUpdate();
 		}
 	}
