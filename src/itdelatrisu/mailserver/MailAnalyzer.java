@@ -116,7 +116,7 @@ public class MailAnalyzer {
 			if (user.getRegistrationSiteUrl() == null)
 				return;
 			senderDomain = Utils.getDomainName(user.getRegistrationSiteUrl());
-		} catch (SQLException | URISyntaxException e) {
+		} catch (SQLException | URISyntaxException | IllegalStateException e) {
 			logger.error("Failed to get user info for email '{}'.", recipient);
 			return;
 		}

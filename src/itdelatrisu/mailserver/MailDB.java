@@ -1,5 +1,6 @@
 package itdelatrisu.mailserver;
 
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -109,7 +110,11 @@ public class MailDB {
 				stmt.setString(2, senderAddress);
 				stmt.setInt(3, recipientId);
 				stmt.setString(4, requestUrl);
-				stmt.setString(5, redirects.get(i).getHost());
+				try {
+					stmt.setString(5, Utils.getDomainName(redirects.get(i).toString()));
+				} catch (URISyntaxException e) {
+					stmt.setString(5, redirects.get(i).getHost());
+				}
 				stmt.setString(6, redirects.get(i).toString());
 				stmt.setInt(7, i + 1);
 				stmt.executeUpdate();

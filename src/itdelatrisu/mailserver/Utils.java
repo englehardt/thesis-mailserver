@@ -124,6 +124,9 @@ public class Utils {
 		String hostname = new URI(url).getHost();
 		if (hostname == null)
 			return null;
-		return InternetDomainName.from(hostname).topPrivateDomain().toString();
+		InternetDomainName idn = InternetDomainName.from(hostname);
+		if (idn.isPublicSuffix())
+			return idn.toString();
+		return idn.topPrivateDomain().toString();
 	}
 }
