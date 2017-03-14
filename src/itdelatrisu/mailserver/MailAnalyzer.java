@@ -2,6 +2,7 @@ package itdelatrisu.mailserver;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -112,8 +113,10 @@ public class MailAnalyzer {
 				return;
 			}
 			recipientId = user.getId();
-			senderDomain = new URL(user.getRegistrationSiteUrl()).getHost();
-		} catch (SQLException | MalformedURLException e) {
+			if (user.getRegistrationSiteUrl() == null)
+				return;
+			senderDomain = Utils.getDomainName(user.getRegistrationSiteUrl());
+		} catch (SQLException | URISyntaxException e) {
 			logger.error("Failed to get user info for email '{}'.", recipient);
 			return;
 		}

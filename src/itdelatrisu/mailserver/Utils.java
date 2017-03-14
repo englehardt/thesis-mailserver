@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -17,6 +19,8 @@ import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
+
+import com.google.common.net.InternetDomainName;
 
 /**
  * Utility methods.
@@ -113,5 +117,13 @@ public class Utils {
 		}
 
 		return null;
+	}
+
+	/** Returns the private domain + public suffix from a given URL, or null if the host is undefined. */
+	public static String getDomainName(String url) throws URISyntaxException {
+		String hostname = new URI(url).getHost();
+		if (hostname == null)
+			return null;
+		return InternetDomainName.from(hostname).topPrivateDomain().toString();
 	}
 }
