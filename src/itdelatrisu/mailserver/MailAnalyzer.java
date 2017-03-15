@@ -2,7 +2,6 @@ package itdelatrisu.mailserver;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -116,7 +115,7 @@ public class MailAnalyzer {
 			if (user.getRegistrationSiteUrl() == null)
 				return;
 			senderDomain = Utils.getDomainName(user.getRegistrationSiteUrl());
-		} catch (SQLException | URISyntaxException | IllegalStateException e) {
+		} catch (SQLException | MalformedURLException | IllegalStateException e) {
 			logger.error("Failed to get user info for email '{}'.", recipient);
 			return;
 		}

@@ -1,6 +1,6 @@
 package itdelatrisu.mailserver;
 
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -112,7 +112,7 @@ public class MailDB {
 				stmt.setString(4, requestUrl);
 				try {
 					stmt.setString(5, Utils.getDomainName(redirects.get(i).toString()));
-				} catch (URISyntaxException e) {
+				} catch (MalformedURLException e) {
 					stmt.setString(5, redirects.get(i).getHost());
 				}
 				stmt.setString(6, redirects.get(i).toString());
@@ -145,7 +145,7 @@ public class MailDB {
 			stmt.setString(5, url);
 			try {
 				stmt.setString(6, Utils.getDomainName(url));
-			} catch (URISyntaxException e) {
+			} catch (MalformedURLException e) {
 				stmt.setString(6, "");
 			}
 			stmt.setString(7, type);

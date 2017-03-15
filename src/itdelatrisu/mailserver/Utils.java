@@ -4,8 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -120,8 +120,8 @@ public class Utils {
 	}
 
 	/** Returns the private domain + public suffix from a given URL, or null if the host is undefined. */
-	public static String getDomainName(String url) throws URISyntaxException {
-		String hostname = new URI(url).getHost();
+	public static String getDomainName(String url) throws MalformedURLException {
+		String hostname = new URL(url).getHost();
 		if (hostname == null)
 			return null;
 		InternetDomainName idn = InternetDomainName.from(hostname);

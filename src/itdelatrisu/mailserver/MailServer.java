@@ -31,7 +31,7 @@ public class MailServer extends SMTPServer {
 		public void deliver(String from, String recipient, InputStream data)
 			throws TooMuchDataException, IOException {
 			String content = Utils.streamToString(data);
-			logger.info("DELIVER: {} -> {}\n{}", from, recipient, content);
+			logger.info("DELIVER: {} -> {}", from, recipient);
 			handler.handleMessage(from, recipient, content);
 		}
 	}
