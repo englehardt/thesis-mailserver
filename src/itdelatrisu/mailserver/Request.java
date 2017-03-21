@@ -103,7 +103,6 @@ public class Request {
 			conn.setRequestProperty("Accept-Encoding", "gzip, deflate, sdch, br");
 			conn.setRequestProperty("Accept-Language", "en-US,en;q=0.8");
 			conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36");
-			conn.setRequestProperty("Referer", "https://mail.google.com/mail/u/0/");
 
 			// check for redirects
 			try {
