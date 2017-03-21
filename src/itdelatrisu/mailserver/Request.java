@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class Request {
 	/** Maximum number of HTTP/HTTPS redirects to follow. */
-	private static final int MAX_REDIRECTS = 20;
+	private static final int MAX_REDIRECTS = 50;
 
 	/** Connection timeout, in ms. */
 	private static final int CONNECTION_TIMEOUT = 5000;
