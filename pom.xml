@@ -110,6 +110,13 @@
 			<version>1.9.2</version>
 		</dependency>
 
+		<!-- JSON Parser -->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20160810</version>
+		</dependency>
+
 		<!-- Murmur Hash (for looking for hashed emails) -->
 		<dependency>
 			<groupId>com.sangupta</groupId>

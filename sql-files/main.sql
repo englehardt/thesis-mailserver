@@ -48,3 +48,15 @@ CREATE TABLE IF NOT EXISTS `leaked_emails` (
 	`url_type` VARCHAR(24) NOT NULL COMMENT 'type of URL',
 	`is_redirect` TINYINT(1) NOT NULL COMMENT 'whether or not the URL was a redirect'
 ) ENGINE=MyISAM;
+
+---
+--- Table structure for table `link_groups`
+---
+CREATE TABLE IF NOT EXISTS `link_groups` (
+	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'unique auto-incrementing ID',
+	`sender_domain` VARCHAR(255) NOT NULL COMMENT 'domain of mail sender',
+	`sender_address` VARCHAR(254) NOT NULL COMMENT 'mail sender',
+	`recipient_id` INT(11) UNSIGNED NOT NULL COMMENT 'mail recipient ID',
+	`urls` TEXT NOT NULL COMMENT 'list of link URLs (delimited)',
+	PRIMARY KEY (`id`)
+) ENGINE=MyISAM;

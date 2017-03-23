@@ -5,8 +5,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -85,6 +88,9 @@ public class MailAnalyzer {
 		this.random = new Random();
 	}
 
+	/** Shuts down the executor service. */
+	public void shutdown() { pool.shutdown(); }
+
 	/** Analyzes the mail. */
 	public void analyze(String from, String recipient, String data) {
 		// extract HTML from the email
@@ -127,6 +133,29 @@ public class MailAnalyzer {
 
 		// request tracking images
 		requestTrackingImages(extractor, from, recipient, recipientId, senderDomain, encodings);
+
+		// record links to visit
+		recordLinksToVisit(extractor, from, recipient, recipientId, senderDomain, from, encodings);
+	}
+
+	/** Finds leaked email addresses in the given URL. */
+	private void findLeakedEmailAddress(
+		String url,
+		String type,
+		List<HashChecker.NamedValue<String>> encodings,
+		boolean isRedirect,
+		int recipientId,
+		String senderDomain,
+		String senderAddress
+	) {
+		try {
+			for (HashChecker.NamedValue<String> enc : encodings) {
+				if (url.contains(enc.getValue()))
+					db.addLeakedEmailAddress(url, type, enc.getName(), isRedirect, senderDomain, senderAddress, recipientId);
+			}
+		} catch (SQLException e) {
+			logger.error("Failed to record leaked email address.", e);
+		}
 	}
 
 	/** Makes requests for tracking images present in the message. */
@@ -195,26 +224,119 @@ public class MailAnalyzer {
 		}
 	}
 
-	/** Finds leaked email addresses in the given URL. */
-	private void findLeakedEmailAddress(
-		String url,
-		String type,
-		List<HashChecker.NamedValue<String>> encodings,
-		boolean isRedirect,
+	/** Records a group of links in the message to be visited. */
+	private void recordLinksToVisit(
+		LinkExtractor extractor,
+		String from,
+		String recipient,
 		int recipientId,
 		String senderDomain,
-		String senderAddress
+		String senderAddress,
+		List<HashChecker.NamedValue<String>> encodings
 	) {
-		try {
+		// visit links:
+		// - up to 2 URLs from the most frequent prefix:
+		//   > 1 URL containing the recipient email address (if any)
+		//   > 1 other URL containing query parameters (if any)
+		//   > if none matched above: the longest URL with a non-empty path (if any)
+		// - 1 other URL from another prefix containing the recipient email address (if any)
+		Map<String, List<String>> map = groupByPrefix(extractor.getInlineLinks());
+		if (map.isEmpty())
+			return;
+		List<String> maxList = null;
+		for (List<String> list : map.values()) {
+			if (maxList == null || list.size() > maxList.size())
+				maxList = list;
+		}
+		Collections.shuffle(maxList, random);
+		List<String> urls = new ArrayList<String>();
+		for (String url : maxList) {
 			for (HashChecker.NamedValue<String> enc : encodings) {
-				if (url.contains(enc.getValue()))
-					db.addLeakedEmailAddress(url, type, enc.getName(), isRedirect, senderDomain, senderAddress, recipientId);
+				if (url.contains(enc.getValue())) {
+					urls.add(url);
+					break;
+				}
 			}
+			if (!urls.isEmpty())
+				break;
+		}
+		if (!urls.isEmpty())
+			maxList.remove(urls.get(0));
+		for (String url : maxList) {
+			if (url.indexOf('?') != -1) {
+				urls.add(url);
+				break;
+			}
+		}
+		if (urls.isEmpty()) {
+			String longestUrl = null;
+			for (String url : maxList) {
+				int i = url.indexOf("://"), j = url.indexOf('/', (i == -1) ? 0 : i + 3);
+				if (j == -1 || j == url.length() - 1)
+					continue;
+				if (longestUrl == null || url.length() > longestUrl.length())
+					longestUrl = url;
+			}
+			if (longestUrl != null)
+				urls.add(longestUrl);
+		}
+		for (List<String> list : map.values()) {
+			if (list == maxList)
+				continue;
+			for (String url : list) {
+				boolean added = false;
+				for (HashChecker.NamedValue<String> enc : encodings) {
+					if (url.contains(enc.getValue())) {
+						urls.add(url);
+						added = true;
+						break;
+					}
+				}
+				if (added)
+					break;
+			}
+		}
+
+		if (urls.isEmpty())
+			return;
+
+		// record links in database
+		try {
+			db.addLinkGroup(urls, senderDomain, senderAddress, recipientId);
 		} catch (SQLException e) {
-			logger.error("Failed to record leaked email address.", e);
+			logger.error("Failed to record links to visit.", e);
 		}
 	}
 
-	/** Shuts down the executor service. */
-	public void shutdown() { pool.shutdown(); }
+	/** Returns a map of the URLs grouped by prefix: prefix -> list(URLs). */
+	private Map<String, List<String>> groupByPrefix(List<String> urls) {
+		// match prefixes by (in order of preference):
+		// - the first "/?" sequence
+		// - the '/' character before the first '?'
+		// - the second '/' after the TLD
+		// - the entire string
+		Map<String, List<String>> map = new HashMap<String, List<String>>();
+		for (String url : urls) {
+			int index = url.indexOf('?');
+			if (index != -1) {
+				if (url.charAt(index - 1) != '/') {
+					int i = url.substring(0, index - 1).lastIndexOf('/');
+					if (i != -1)
+						index = i;
+				}
+			} else {
+				int i = url.indexOf("://"), j = url.indexOf('/', (i == -1) ? 0 : i + 3);
+				if (j != -1)
+					index = url.indexOf('/', j + 1);
+			}
+			String prefix = (index == -1) ? url : url.substring(0, index + 1);
+			List<String> list = map.get(prefix);
+			if (list == null) {
+				list = new ArrayList<String>();
+				map.put(prefix, list);
+			}
+			list.add(url);
+		}
+		return map;
+	}
 }

@@ -18,6 +18,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
  * Database connection manager.
  */
 public class MailDB {
+	private static final char URL_DELIMITER = '\r';
 	private final BasicDataSource dataSource;
 
 	/** Represents a mail user. */
@@ -49,6 +50,38 @@ public class MailDB {
 
 		/** Returns the registration date. */
 		public Date getRegistrationDate() { return ts; }
+	}
+
+	/** Represents a link group. */
+	public class LinkGroup {
+		private final int id;
+		private final String senderDomain, senderAddress;
+		private final int recipientId;
+		private final String[] urls;
+
+		/** Constructor. */
+		public LinkGroup(int id, String senderDomain, String senderAddress, int recipientId, String[] urls) {
+			this.id = id;
+			this.senderDomain = senderDomain;
+			this.senderAddress = senderAddress;
+			this.recipientId = recipientId;
+			this.urls = urls;
+		}
+
+		/** Returns the unique link group ID. */
+		public int getId() { return id; }
+
+		/** Returns the sender domain. */
+		public String getSenderDomain() { return senderDomain; }
+
+		/** Returns the sender email address. */
+		public String getSenderAddress() { return senderAddress; }
+
+		/** Returns the recipient's user ID. */
+		public int getRecipientId() { return recipientId; }
+
+		/** Returns the link URLs in this group. */
+		public String[] getUrls() { return urls; }
 	}
 
 	/** Initializes the connection pool. */
@@ -202,6 +235,22 @@ public class MailDB {
 		}
 	}
 
+	/** Returns user data for the given user ID, or null if it does not exist. */
+	public MailUser getUserInfo(int id) throws SQLException {
+		try (
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement(
+				"SELECT `email`, `register_site`, `register_url`, `register_time` FROM `users` WHERE `id` = ?"
+			);
+		) {
+			stmt.setInt(1, id);
+			stmt.executeQuery();
+			try (ResultSet rs = stmt.executeQuery()) {
+				return (!rs.next()) ? null : new MailUser(id, rs.getString(1), rs.getString(2), rs.getString(3), rs.getTimestamp(4));
+			}
+		}
+	}
+
 	/** Returns a list of all user data. */
 	public List<MailUser> getUsers() throws SQLException {
 		try (
@@ -215,6 +264,75 @@ public class MailDB {
 					users.add(new MailUser(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5)));
 			}
 			return users;
+		}
+	}
+
+	/** Adds a group of links to the database. */
+	public void addLinkGroup(
+		List<String> urls,
+		String senderDomain,
+		String senderAddress,
+		int recipientId
+	) throws SQLException {
+		try (
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement(
+				"INSERT INTO `link_groups` (`sender_domain`, `sender_address`, `recipient_id`, `urls`) VALUES(?, ?, ?, ?)"
+			);
+		) {
+			stmt.setString(1, senderDomain);
+			stmt.setString(2, senderAddress);
+			stmt.setInt(3, recipientId);
+			stmt.setString(4, String.join(Character.toString(URL_DELIMITER), urls));
+			stmt.executeUpdate();
+		}
+	}
+
+	/** Retrieves a random group of links from the database, or null if none exists. */
+	public LinkGroup getLinkGroup() throws SQLException {
+		try (
+			Connection connection = getConnection();
+			Statement stmt = connection.createStatement();
+		) {
+			String sql = "SELECT `id`, `sender_domain`, `sender_address`, `recipient_id`, `urls` FROM `link_groups` ORDER BY RAND() LIMIT 1";
+			try (ResultSet rs = stmt.executeQuery(sql)) {
+				if (!rs.next())
+					return null;
+				String[] urls = rs.getString(5).split(Character.toString(URL_DELIMITER));
+				return new LinkGroup(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getInt(4), urls);
+			}
+		}
+	}
+
+	/** Retrieves link group data for the given ID from the database, or null if it does not exist. */
+	public LinkGroup getLinkGroup(int id) throws SQLException {
+		try (
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement(
+				"SELECT `sender_domain`, `sender_address`, `recipient_id`, `urls` FROM `link_groups` WHERE `id` = ?"
+			);
+		) {
+			stmt.setInt(1, id);
+			stmt.executeQuery();
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (!rs.next())
+					return null;
+				String[] urls = rs.getString(4).split(Character.toString(URL_DELIMITER));
+				return new LinkGroup(id, rs.getString(1), rs.getString(2), rs.getInt(3), urls);
+			}
+		}
+	}
+
+	/** Removes link group data for the given ID from the database. */
+	public void removeLinkGroup(int id) throws SQLException {
+		try (
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement(
+				"DELETE FROM `link_groups` WHERE `id` = ?"
+			);
+		) {
+			stmt.setInt(1, id);
+			stmt.executeUpdate();
 		}
 	}
 }
