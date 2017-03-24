@@ -96,7 +96,7 @@ public class WebServer {
 			return internalServerError(response);
 		}
 
-		logger.info("/visit -> {}", linkGroup.getId());
+		logger.info("/visit -> ID {} ({} links)", linkGroup.getId(), linkGroup.getUrls().length);
 
 		// encode the data
 		JSONObject json = new JSONObject();
@@ -141,7 +141,7 @@ public class WebServer {
 			return internalServerError(response);
 		}
 
-		logger.info("/results: {}", linkGroup.getId());
+		logger.info("/results: ID {} (received {} results)", linkGroup.getId(), urls.length);
 
 		// get recipient email
 		MailDB.MailUser user;
