@@ -1,7 +1,6 @@
 --
 -- Table structure for table `users`
 --
-
 CREATE TABLE IF NOT EXISTS `users` (
 	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'unique auto-incrementing ID',
 	`email` VARCHAR(254) NOT NULL UNIQUE COMMENT 'unique email address',
@@ -14,7 +13,6 @@ CREATE TABLE IF NOT EXISTS `users` (
 --
 -- Table structure for table `inbox`
 --
-
 CREATE TABLE IF NOT EXISTS `inbox` (
 	`recipient` VARCHAR(254) COMMENT 'mail recipient',
 	`sender` VARCHAR(254) NOT NULL COMMENT 'mail sender',
@@ -24,10 +22,9 @@ CREATE TABLE IF NOT EXISTS `inbox` (
 	PRIMARY KEY (`recipient`, `filename`)
 ) ENGINE=MyISAM;
 
----
---- Table structure for table `redirects`
----
-
+--
+-- Table structure for table `redirects`
+--
 CREATE TABLE IF NOT EXISTS `redirects` (
 	`sender_domain` VARCHAR(255) NOT NULL COMMENT 'domain of mail sender',
 	`sender_address` VARCHAR(254) NOT NULL COMMENT 'mail sender',
@@ -38,10 +35,9 @@ CREATE TABLE IF NOT EXISTS `redirects` (
 	`redirect_index` INT(11) UNSIGNED NOT NULL COMMENT 'index in the redirect chain'
 ) ENGINE=MyISAM;
 
----
---- Table structure for table `leaked_emails`
----
-
+--
+-- Table structure for table `leaked_emails`
+--
 CREATE TABLE IF NOT EXISTS `leaked_emails` (
 	`sender_domain` VARCHAR(255) NOT NULL COMMENT 'domain of mail sender',
 	`sender_address` VARCHAR(254) NOT NULL COMMENT 'mail sender',
@@ -53,10 +49,9 @@ CREATE TABLE IF NOT EXISTS `leaked_emails` (
 	`is_redirect` TINYINT(1) NOT NULL COMMENT 'whether or not the URL was a redirect'
 ) ENGINE=MyISAM;
 
----
---- Table structure for table `link_groups`
----
-
+--
+-- Table structure for table `link_groups`
+--
 CREATE TABLE IF NOT EXISTS `link_groups` (
 	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'unique auto-incrementing ID',
 	`sender_domain` VARCHAR(255) NOT NULL COMMENT 'domain of mail sender',
