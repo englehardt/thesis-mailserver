@@ -1,15 +1,33 @@
-SMTP mail server for thesis project.
+Mail server for thesis project.
 
-Build with Maven:
+Consists of an SMTP server, web server, and MySQL database.
+
+## Prerequisites
+Requires Java 8, Maven, and MySQL.
+
+Installation on Ubuntu 16.04:
 ```
-$ mvn package
+$ sudo apt-get install default-jdk maven mysql-server
+```
+
+Execute the MySQL scripts located in the `sql-files/` directory:
+```
+$ mysql -u root -p
+(enter your root password)
+
+mysql> source ./sql-files/db.sql;
+mysql> source ./sql-files/main.sql;
+mysql> exit
+```
+
+## Usage
+Build with Maven and run the packaged JAR:
+```
+$ mvn clean package
 $ java -jar target/mailserver.jar
 ```
 
-Incoming mail is stored on disk in the `mail/` directory.
-Other information is stored in a MySQL database, with connection details
-specified in `Launcher.java`.  To set up the database, execute the scripts
-located in the `sql-files/` directory.
-
-By default, the SMTP server listens on port 25 and the web server listens on
-port 8080.
+Notes:
+* By default, the SMTP server listens on port 25 and the web server listens on port 8080.
+* Incoming mail is stored on disk in the `mail/` directory.
+* MySQL connection details are specified in `Launcher.java`.

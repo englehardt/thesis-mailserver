@@ -1,6 +1,7 @@
 --
 -- Table structure for table `users`
 --
+
 CREATE TABLE IF NOT EXISTS `users` (
 	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'unique auto-incrementing ID',
 	`email` VARCHAR(254) NOT NULL UNIQUE COMMENT 'unique email address',
@@ -13,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 --
 -- Table structure for table `inbox`
 --
+
 CREATE TABLE IF NOT EXISTS `inbox` (
 	`recipient` VARCHAR(254) COMMENT 'mail recipient',
 	`sender` VARCHAR(254) NOT NULL COMMENT 'mail sender',
@@ -25,6 +27,7 @@ CREATE TABLE IF NOT EXISTS `inbox` (
 ---
 --- Table structure for table `redirects`
 ---
+
 CREATE TABLE IF NOT EXISTS `redirects` (
 	`sender_domain` VARCHAR(255) NOT NULL COMMENT 'domain of mail sender',
 	`sender_address` VARCHAR(254) NOT NULL COMMENT 'mail sender',
@@ -38,6 +41,7 @@ CREATE TABLE IF NOT EXISTS `redirects` (
 ---
 --- Table structure for table `leaked_emails`
 ---
+
 CREATE TABLE IF NOT EXISTS `leaked_emails` (
 	`sender_domain` VARCHAR(255) NOT NULL COMMENT 'domain of mail sender',
 	`sender_address` VARCHAR(254) NOT NULL COMMENT 'mail sender',
@@ -52,6 +56,7 @@ CREATE TABLE IF NOT EXISTS `leaked_emails` (
 ---
 --- Table structure for table `link_groups`
 ---
+
 CREATE TABLE IF NOT EXISTS `link_groups` (
 	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'unique auto-incrementing ID',
 	`sender_domain` VARCHAR(255) NOT NULL COMMENT 'domain of mail sender',
