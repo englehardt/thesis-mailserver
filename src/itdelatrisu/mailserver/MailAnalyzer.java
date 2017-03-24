@@ -283,8 +283,8 @@ public class MailAnalyzer {
 		for (List<String> list : map.values()) {
 			if (list == maxList)
 				continue;
+			boolean added = false;
 			for (String url : list) {
-				boolean added = false;
 				for (HashChecker.NamedValue<String> enc : encodings) {
 					if (url.contains(enc.getValue())) {
 						urls.add(url);
@@ -295,6 +295,8 @@ public class MailAnalyzer {
 				if (added)
 					break;
 			}
+			if (added)
+				break;
 		}
 
 		if (urls.isEmpty())
