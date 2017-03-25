@@ -19,6 +19,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
  */
 public class MailDB {
 	private static final char URL_DELIMITER = '\r';
+	private static final int MAX_URL_LENGTH = 2048;
 	private final BasicDataSource dataSource;
 
 	/** Represents a mail user. */
@@ -98,6 +99,15 @@ public class MailDB {
 		return dataSource.getConnection();
 	}
 
+	/** Truncates the given URL if it is too long. */
+	private String truncateUrl(String url) {
+		if (url.length() <= MAX_URL_LENGTH)
+			return url;
+
+		String marker = "[TRUNCATED]";
+		return url.substring(0, MAX_URL_LENGTH - marker.length()) + marker;
+	}
+
 	/** Adds a mail entry to the database. */
 	public void addMailEntry(
 		String recipient,
@@ -142,13 +152,13 @@ public class MailDB {
 				stmt.setString(1, senderDomain);
 				stmt.setString(2, senderAddress);
 				stmt.setInt(3, recipientId);
-				stmt.setString(4, requestUrl);
+				stmt.setString(4, truncateUrl(requestUrl));
 				try {
 					stmt.setString(5, Utils.getDomainName(redirects.get(i).toString()));
 				} catch (MalformedURLException e) {
 					stmt.setString(5, redirects.get(i).getHost());
 				}
-				stmt.setString(6, redirects.get(i).toString());
+				stmt.setString(6, truncateUrl(redirects.get(i).toString()));
 				stmt.setInt(7, i + 1);
 				stmt.executeUpdate();
 			}
@@ -175,7 +185,7 @@ public class MailDB {
 			stmt.setString(2, senderAddress);
 			stmt.setInt(3, recipientId);
 			stmt.setString(4, encoding);
-			stmt.setString(5, url);
+			stmt.setString(5, truncateUrl(url));
 			try {
 				stmt.setString(6, Utils.getDomainName(url));
 			} catch (MalformedURLException e) {
@@ -197,7 +207,7 @@ public class MailDB {
 		) {
 			stmt.setString(1, email);
 			stmt.setString(2, site);
-			stmt.setString(3, url);
+			stmt.setString(3, truncateUrl(url));
 			int rows = stmt.executeUpdate();
 			return rows > 0;
 		}
