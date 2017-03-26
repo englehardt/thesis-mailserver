@@ -21,7 +21,7 @@ public class EmailAddressGenerator {
 	/** Initializes the generator. */
 	public EmailAddressGenerator() {
 		this.firstNames = loadNames("census_1990_first_names.txt");
-		this.surnames = loadNames("census_2000_surnames.txt");
+		this.surnames = loadNames("census_2010_surnames.txt");
 	}
 
 	/** Loads names line-by-line from the given resource file. */
