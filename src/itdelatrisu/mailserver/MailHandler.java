@@ -11,8 +11,13 @@ import org.slf4j.LoggerFactory;
 public class MailHandler {
 	private static final Logger logger = LoggerFactory.getLogger(MailHandler.class);
 
+	/** The database instance. */
 	private final MailDB db;
+
+	/** The storage module instance. */
 	private final MailStorage storage;
+
+	/** The analyzer module instance. */
 	private final MailAnalyzer analyzer;
 
 	/** Creates the mail handler. */

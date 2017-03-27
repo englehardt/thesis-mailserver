@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 public class EmailAddressGenerator {
 	private static final Logger logger = LoggerFactory.getLogger(EmailAddressGenerator.class);
 
+	/** Name lists. */
 	private final List<String> firstNames, surnames;
 
 	/** Initializes the generator. */
@@ -26,7 +27,7 @@ public class EmailAddressGenerator {
 
 	/** Loads names line-by-line from the given resource file. */
 	private List<String> loadNames(String res) {
-		List<String> list = new ArrayList<>();
+		ArrayList<String> list = new ArrayList<>();
 		try (
 			InputStream in = getClass().getResourceAsStream("/" + res);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -39,6 +40,7 @@ public class EmailAddressGenerator {
 		} catch (IOException e) {
 			logger.error("Failed to load name list.", e);
 		}
+		list.trimToSize();
 		return list;
 	}
 

@@ -18,8 +18,13 @@ import org.apache.commons.dbcp2.BasicDataSource;
  * Database connection manager.
  */
 public class MailDB {
+	/** Delimiter for URLs. */
 	private static final char URL_DELIMITER = '\r';
+
+	/** Maximum allowed length of a URL. */
 	private static final int MAX_URL_LENGTH = 2048;
+
+	/** The data source. */
 	private final BasicDataSource dataSource;
 
 	/** Represents a mail user. */

@@ -24,13 +24,24 @@ import org.slf4j.LoggerFactory;
 public class MailStorage {
 	private static final Logger logger = LoggerFactory.getLogger(MailStorage.class);
 
+	/** Default root mail directory. */
+	private static final File DEFAULT_MAIL_DIR = new File("mail");
+
+	/** The database instance. */
 	private final MailDB db;
+
+	/** The root mail directory. */
 	private final File mailDir;
 
 	/** Initializes the storage module. */
 	public MailStorage(MailDB db) {
+		this(db, DEFAULT_MAIL_DIR);
+	}
+
+	/** Initializes the storage module. */
+	public MailStorage(MailDB db, File rootDir) {
 		this.db = db;
-		this.mailDir = new File("mail");
+		this.mailDir = rootDir;
 		if (!mailDir.isDirectory() && !mailDir.mkdirs())
 			logger.error("Failed to create root mail directory '{}'.", mailDir.getAbsolutePath());
 	}

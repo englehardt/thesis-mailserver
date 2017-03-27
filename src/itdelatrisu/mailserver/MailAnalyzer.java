@@ -28,11 +28,20 @@ import org.slf4j.LoggerFactory;
  */
 public class MailAnalyzer {
 	private static final Logger logger = LoggerFactory.getLogger(MailAnalyzer.class);
+
+	/** Size of the thread pool for executing requests. */
 	private static final int MAX_REQUEST_THREADS = 5;
+
+	/** Delay (in ms) before scheduling a task. */
 	private static final int TASK_SCHEDULE_DELAY = 1000;
 
+	/** The database instance. */
 	private final MailDB db;
+
+	/** The thread pool for executing requests. */
 	private final ScheduledExecutorService pool;
+
+	/** The random number generator instance. */
 	private final Random random;
 
 	/** Task for making requests to a URL. */

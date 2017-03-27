@@ -21,17 +21,32 @@ import spark.Spark;
 public class WebServer {
 	private static final Logger logger = LoggerFactory.getLogger(WebServer.class);
 
+	/** Default port. */
+	private static final int DEFAULT_PORT = 8080;
+
+	/** The database instance. */
 	private final MailDB db;
+
+	/** The email address generator. */
 	private final EmailAddressGenerator generator;
+
+	/** The mail server's domain name. */
 	private final String domain;
+
+	/** The port. */
 	private final int port;
 
 	/** Initializes the web server. */
 	public WebServer(MailDB db, String domain) {
+		this(db, domain, DEFAULT_PORT);
+	}
+
+	/** Initializes the web server. */
+	public WebServer(MailDB db, String domain, int port) {
 		this.db = db;
 		this.generator = new EmailAddressGenerator();
 		this.domain = domain;
-		this.port = 8080;
+		this.port = port;
 		Spark.port(port);
 	}
 

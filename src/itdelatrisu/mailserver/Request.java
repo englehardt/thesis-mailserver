@@ -20,10 +20,10 @@ public class Request {
 	/** Maximum number of HTTP/HTTPS redirects to follow. */
 	private static final int MAX_REDIRECTS = 50;
 
-	/** Connection timeout, in ms. */
+	/** Connection timeout (in ms). */
 	private static final int CONNECTION_TIMEOUT = 5000;
 
-	/** Read timeout, in ms. */
+	/** Read timeout (in ms). */
 	private static final int READ_TIMEOUT = 10000;
 
 	/** The URL. */

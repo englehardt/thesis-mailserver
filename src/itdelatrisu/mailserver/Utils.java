@@ -34,8 +34,6 @@ public class Utils {
 	};
 	static { Arrays.sort(illegalChars); }
 
-	private Utils() {}
-
 	/**
 	 * Cleans a file name.
 	 * @param badFileName the original name string
