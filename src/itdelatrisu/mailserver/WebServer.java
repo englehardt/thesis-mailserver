@@ -123,7 +123,7 @@ public class WebServer {
 
 	/**
 	 * Submits all requests generated from a group of URLs (from {@link #visit(spark.Request, spark.Response)}).
-	 * POST /results : {id: int, requests: [[url, referrer], []...]}
+	 * POST /results : {id: int, requests: [[url, referrer, post], []...]}
 	 */
 	private String results(spark.Request request, spark.Response response) {
 		// decode request data
@@ -138,11 +138,12 @@ public class WebServer {
 
 			// parse the URL list
 			JSONArray urlsJson = json.getJSONArray("requests");
-			urls = new String[urlsJson.length()][2];
+			urls = new String[urlsJson.length()][3];
 			for (int i = 0; i < urlsJson.length(); i++) {
 				JSONArray ar = urlsJson.getJSONArray(i);
 				urls[i][0] = ar.getString(0);
 				urls[i][1] = ar.isNull(1) ? null : ar.getString(1);
+				urls[i][2] = ar.isNull(2) ? null : ar.getString(2);
 			}
 
 			// get the link group data
@@ -172,13 +173,15 @@ public class WebServer {
 		Set<String> baseUrls = new HashSet<String>(Arrays.asList(linkGroup.getUrls()));
 		List<HashChecker.NamedValue<String>> encodings = HashChecker.getEncodings(user.getEmail());
 		for (String[] urlContainer : urls) {
-			String url = urlContainer[0], referrer = urlContainer[1];
+			String url = urlContainer[0], referrer = urlContainer[1], postBody = urlContainer[2];
 			if (baseUrls.contains(url))
 				continue;
 			try {
 				for (HashChecker.NamedValue<String> enc : encodings) {
 					String type;
-					if (url.contains(enc.getValue()))
+					if (postBody != null && postBody.contains(enc.getValue()))
+						type = "link-post";
+					else if (url.contains(enc.getValue()))
 						type = "link-request";
 					else if (referrer != null && referrer.contains(enc.getValue()))
 						type = "link-referrer";
