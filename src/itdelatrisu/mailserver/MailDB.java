@@ -176,6 +176,7 @@ public class MailDB {
 		String type,
 		String encoding,
 		boolean isRedirect,
+		boolean isIntentional,
 		String senderDomain,
 		String senderAddress,
 		int recipientId
@@ -183,7 +184,7 @@ public class MailDB {
 		try (
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-				"INSERT INTO `leaked_emails` VALUES(?, ?, ?, ?, ?, ?, ?, ?)"
+				"INSERT INTO `leaked_emails` VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)"
 			);
 		) {
 			stmt.setString(1, senderDomain);
@@ -198,6 +199,7 @@ public class MailDB {
 			}
 			stmt.setString(7, type);
 			stmt.setBoolean(8, isRedirect);
+			stmt.setBoolean(9, isIntentional);
 			stmt.executeUpdate();
 		}
 	}

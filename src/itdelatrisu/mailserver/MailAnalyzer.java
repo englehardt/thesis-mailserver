@@ -159,8 +159,12 @@ public class MailAnalyzer {
 	) {
 		try {
 			for (HashChecker.NamedValue<String> enc : encodings) {
-				if (url.contains(enc.getValue()))
-					db.addLeakedEmailAddress(url, type, enc.getName(), isRedirect, senderDomain, senderAddress, recipientId);
+				if (url.contains(enc.getValue())) {
+					db.addLeakedEmailAddress(
+						url, type, enc.getName(), isRedirect, true,
+						senderDomain, senderAddress, recipientId
+					);
+				}
 			}
 		} catch (SQLException e) {
 			logger.error("Failed to record leaked email address.", e);
