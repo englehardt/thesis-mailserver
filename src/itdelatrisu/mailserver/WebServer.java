@@ -157,7 +157,7 @@ public class WebServer {
 
 			// parse the URL list
 			JSONArray urlsJson = json.getJSONArray("requests");
-			urls = new String[urlsJson.length()][3];
+			urls = new String[urlsJson.length()][4];
 			for (int i = 0; i < urlsJson.length(); i++) {
 				JSONArray ar = urlsJson.getJSONArray(i);
 				urls[i][0] = ar.getString(0);
