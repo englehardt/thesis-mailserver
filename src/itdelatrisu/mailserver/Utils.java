@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.zip.GZIPInputStream;
 
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -126,5 +127,12 @@ public class Utils {
 		if (idn.isPublicSuffix())
 			return idn.toString();
 		return idn.topPrivateDomain().toString();
+	}
+
+	/** Decompresses a GZIP byte array into a String. */
+	public static String gzipDecompress(byte[] compressed) throws IOException {
+		try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(compressed))) {
+			return streamToString(gis);
+		}
 	}
 }

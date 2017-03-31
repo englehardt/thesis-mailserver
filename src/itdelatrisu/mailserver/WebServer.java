@@ -1,5 +1,6 @@
 package itdelatrisu.mailserver;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -131,13 +132,26 @@ public class WebServer {
 	 * POST /results : {id: int, requests: [[url, topLevelUrl, referrer, postBody], []...]}
 	 */
 	private String results(spark.Request request, spark.Response response) {
-		// decode request data
 		if (request.body().isEmpty())
 			return badRequest(response);
+
+		// handle GZIP encoding
+		String contentEncoding = request.headers("Content-Encoding");
+		String requestBody;
+		if (contentEncoding != null && contentEncoding.equals("gzip")) {
+			try {
+				requestBody = Utils.gzipDecompress(request.bodyAsBytes());
+			} catch (IOException e) {
+				return internalServerError(response);
+			}
+		} else
+			requestBody = request.body();
+
+		// decode request data
 		MailDB.LinkGroup linkGroup;
 		String[][] urls;
 		try {
-			JSONObject json = new JSONObject(request.body());
+			JSONObject json = new JSONObject(requestBody);
 			if (!json.has("id") || !json.has("requests"))
 				return badRequest(response);
 
