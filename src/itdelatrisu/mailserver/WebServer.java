@@ -1,7 +1,6 @@
 package itdelatrisu.mailserver;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -295,7 +294,7 @@ public class WebServer {
 			if (URLEncoder.encode(url, "UTF-8").contains(s) ||
 			    URLDecoder.decode(url, "UTF-8").contains(s))
 				return true;
-		} catch (UnsupportedEncodingException e) {}
+		} catch (Exception e) {}
 
 		return false;
 	}
@@ -307,11 +306,10 @@ public class WebServer {
 
 		String replaced = s.replace(url, "");
 		try {
-			// try URL encoding/decoding on the URL
+			// try URL encoding on the URL
 			String urlEncoded = URLEncoder.encode(url, "UTF-8");
-			String urlDecoded = URLDecoder.decode(url, "UTF-8");
-			replaced = replaced.replace(urlEncoded, "").replace(urlDecoded, "");
-		} catch (UnsupportedEncodingException e) {}
+			replaced = replaced.replace(urlEncoded, "");
+		} catch (Exception e) {}
 
 		return replaced.contains(value);
 	}
