@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS `users` (
 	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'unique auto-incrementing ID',
 	`email` VARCHAR(254) NOT NULL UNIQUE COMMENT 'unique email address',
 	`register_site` VARCHAR(255) NOT NULL COMMENT 'registration site name',
-	`register_url` VARCHAR(2048) NOT NULL COMMENT 'registration url',
+	`register_url` VARCHAR(2048) NOT NULL COMMENT 'registration URL',
+	`register_domain` VARCHAR(255) NOT NULL COMMENT 'domain of the registration URL',
 	`register_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'registration time',
 	PRIMARY KEY (`id`)
 ) ENGINE=MyISAM;
