@@ -1,6 +1,5 @@
 package itdelatrisu.mailserver;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -164,8 +163,12 @@ public class MailDB {
 				stmt.setString(4, truncateUrl(requestUrl));
 				try {
 					stmt.setString(5, Utils.getDomainName(redirects.get(i).toString()));
-				} catch (MalformedURLException e) {
-					stmt.setString(5, redirects.get(i).getHost());
+				} catch (Exception e) {
+					try {
+						stmt.setString(5, redirects.get(i).getHost());
+					} catch (Exception e1) {
+						stmt.setString(5, "");
+					}
 				}
 				stmt.setString(6, truncateUrl(redirects.get(i).toString()));
 				stmt.setInt(7, i + 1);
@@ -198,7 +201,7 @@ public class MailDB {
 			stmt.setString(5, truncateUrl(url));
 			try {
 				stmt.setString(6, Utils.getDomainName(url));
-			} catch (MalformedURLException e) {
+			} catch (Exception e) {
 				stmt.setString(6, "");
 			}
 			stmt.setString(7, type);
@@ -221,7 +224,7 @@ public class MailDB {
 			stmt.setString(3, truncateUrl(url));
 			try {
 				stmt.setString(4, Utils.getDomainName(url));
-			} catch (MalformedURLException e) {
+			} catch (Exception e) {
 				stmt.setString(4, "");
 			}
 			int rows = stmt.executeUpdate();

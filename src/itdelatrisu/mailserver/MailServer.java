@@ -39,5 +39,15 @@ public class MailServer extends SMTPServer {
 	/** Creates the SMTP server. */
 	public MailServer(MailDB db) {
 		super(new SimpleMessageListenerAdapter(new MessageListener(db)));
+		setSystemProperties();
+	}
+
+	/** Sets system properties. */
+	private void setSystemProperties() {
+		// allow multipart messages with no body parts
+		System.setProperty("mail.mime.multipart.allowempty", "true");
+
+		// disable SNI support
+		System.setProperty("jsse.enableSNIExtension", "false");
 	}
 }

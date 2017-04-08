@@ -130,7 +130,7 @@ public class MailAnalyzer {
 			if (user.getRegistrationSiteUrl() == null)
 				return;
 			senderDomain = Utils.getDomainName(user.getRegistrationSiteUrl());
-		} catch (SQLException | MalformedURLException | IllegalStateException e) {
+		} catch (Exception e) {
 			logger.error("Failed to get user info for email '{}'.", recipient);
 			return;
 		}
