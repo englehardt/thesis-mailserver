@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS `users` (
 	`register_url` VARCHAR(2048) NOT NULL COMMENT 'registration URL',
 	`register_domain` VARCHAR(255) NOT NULL COMMENT 'domain of the registration URL',
 	`register_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'registration time',
+	`emails_received` INT(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'number of emails received',
+	`leak_count` INT(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'number of times this email address was leaked',
 	PRIMARY KEY (`id`)
 ) ENGINE=MyISAM;
 

@@ -129,6 +129,9 @@ public class MailDB {
 			PreparedStatement stmt = connection.prepareStatement(
 				"INSERT INTO `inbox` VALUES(?, ?, ?, ?, ?)"
 			);
+			PreparedStatement stmtUpdate = connection.prepareStatement(
+				"UPDATE `users` SET `emails_received` = `emails_received` + 1 WHERE `email` = ?"
+			);
 		) {
 			stmt.setString(1, recipient);
 			stmt.setString(2, sender);
@@ -136,6 +139,9 @@ public class MailDB {
 			stmt.setString(4, subject);
 			stmt.setString(5, filename);
 			stmt.executeUpdate();
+
+			stmtUpdate.setString(1, recipient);
+			stmtUpdate.executeUpdate();
 		}
 	}
 
@@ -193,6 +199,9 @@ public class MailDB {
 			PreparedStatement stmt = connection.prepareStatement(
 				"INSERT INTO `leaked_emails` VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)"
 			);
+			PreparedStatement stmtUpdate = connection.prepareStatement(
+				"UPDATE `users` SET `leak_count` = `leak_count` + 1 WHERE `id` = ?"
+			);
 		) {
 			stmt.setString(1, senderDomain);
 			stmt.setString(2, senderAddress);
@@ -208,6 +217,9 @@ public class MailDB {
 			stmt.setBoolean(8, isRedirect);
 			stmt.setBoolean(9, isIntentional);
 			stmt.executeUpdate();
+
+			stmtUpdate.setInt(1, recipientId);
+			stmtUpdate.executeUpdate();
 		}
 	}
 
