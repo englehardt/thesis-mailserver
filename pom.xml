@@ -110,6 +110,13 @@
 			<version>1.9.2</version>
 		</dependency>
 
+		<!-- URL detector -->
+		<dependency>
+			<groupId>com.linkedin.urls</groupId>
+			<artifactId>url-detector</artifactId>
+			<version>0.1.17</version>
+		</dependency>
+
 		<!-- JSON Parser -->
 		<dependency>
 			<groupId>org.json</groupId>

@@ -35,6 +35,26 @@ public class MailAnalyzer {
 	/** Delay (in ms) before scheduling a task. */
 	private static final int TASK_SCHEDULE_DELAY = 1000;
 
+	/** Keywords for email confirmation. */
+	private static final String[] EMAIL_CONFIRMATION_KEYWORDS = new String[] {
+		"confirm", "verify", "validate"
+	};
+
+	/** Additional keywords in link text for email confirmation. */
+	private static final String[] EMAIL_CONFIRMATION_LINK_KEYWORDS = new String[] {
+		"subscribe", "click"
+	};
+
+	/** Blacklisted keywords in link text for email confirmation. */
+	private static final String[] EMAIL_CONFIRMATION_LINK_BLACKLIST = new String[] {
+		"unsubscribe", "view"
+	};
+
+	/** Blacklisted keywords in email subject for email confirmation. */
+	private static final String[] EMAIL_CONFIRMATION_SUBJECT_BLACKLIST = new String[] {
+		"confirmed", "subscribed"
+	};
+
 	/** The database instance. */
 	private final MailDB db;
 
@@ -106,19 +126,25 @@ public class MailAnalyzer {
 			return;
 
 		// extract HTML from the email
+		MimeMessage message;
 		String html;
+		LinkExtractor extractor = null;
 		try {
-			MimeMessage message = Utils.toMimeMessage(data);
+			message = Utils.toMimeMessage(data);
 			html = Utils.getHtmlFromMessage(message);
+			if (html != null)
+				extractor = new LinkExtractor(html);
 		} catch (MessagingException | IOException e) {
 			logger.error("Failed to parse message.", e);
 			return;
 		}
-		if (html == null)
-			return;
 
-		// extract URLs
-		LinkExtractor extractor = new LinkExtractor(html);
+		// is this the first email?
+		if (user.getReceivedEmailCount() == 0)
+			findConfirmationLinksToVisit(message, extractor, from, user.getId(), user.getRegistrationSiteDomain());
+
+		if (html == null)
+			return;  // no HTML, skip everything else
 
 		// find leaked email addresses
 		List<HashChecker.NamedValue<String>> encodings = HashChecker.getEncodings(user.getEmail());
@@ -129,7 +155,7 @@ public class MailAnalyzer {
 		requestTrackingImages(extractor, from, user.getId(), user.getRegistrationSiteDomain(), encodings);
 
 		// record links to visit
-		recordLinksToVisit(extractor, from, user.getId(), user.getRegistrationSiteDomain(), from, encodings);
+		recordLinksToVisit(extractor, from, user.getId(), user.getRegistrationSiteDomain(), encodings);
 	}
 
 	/** Finds leaked email addresses in the given URL. */
@@ -227,7 +253,6 @@ public class MailAnalyzer {
 		String from,
 		int recipientId,
 		String senderDomain,
-		String senderAddress,
 		List<HashChecker.NamedValue<String>> encodings
 	) {
 		// visit links:
@@ -300,21 +325,22 @@ public class MailAnalyzer {
 
 		// record links in database
 		try {
-			db.addLinkGroup(urls, senderDomain, senderAddress, recipientId);
+			db.addLinkGroup(urls, senderDomain, from, recipientId);
 		} catch (SQLException e) {
 			logger.error("Failed to record links to visit.", e);
 		}
 	}
 
 	/** Returns a map of the URLs grouped by prefix: prefix -> list(URLs). */
-	private Map<String, List<String>> groupByPrefix(List<String> urls) {
+	private Map<String, List<String>> groupByPrefix(List<LinkExtractor.InlineLink> links) {
 		// match prefixes by (in order of preference):
 		// - the first "/?" sequence
 		// - the '/' character before the first '?'
 		// - the second '/' after the TLD
 		// - the entire string
 		Map<String, List<String>> map = new HashMap<String, List<String>>();
-		for (String url : urls) {
+		for (LinkExtractor.InlineLink link : links) {
+			String url = link.url;
 			int index = url.indexOf('?');
 			if (index != -1) {
 				if (url.charAt(index - 1) != '/') {
@@ -336,5 +362,106 @@ public class MailAnalyzer {
 			list.add(url);
 		}
 		return map;
+	}
+
+	/** Finds email confirmation links to visit. */
+	private void findConfirmationLinksToVisit(
+		MimeMessage message,
+		LinkExtractor extractor,
+		String from,
+		int recipientId,
+		String senderDomain
+	) {
+		// if keyword matches in message subject line or text body...
+		// - HTML: link with a keyword in the tag text, or if only 1 link exists
+		// - plain-text: longest link
+		boolean subjectMatches;
+		try {
+			String subject = message.getSubject().toLowerCase();
+			subjectMatches =
+				matches(subject, EMAIL_CONFIRMATION_KEYWORDS) &&
+				!matches(subject, EMAIL_CONFIRMATION_SUBJECT_BLACKLIST);
+		} catch (MessagingException e) {
+			logger.error("Failed to parse email to find confirmation links.", e);
+			return;
+		}
+		String url = null;
+		if (extractor != null && !extractor.getInlineLinks().isEmpty()) {
+			// check HTML
+			if (!subjectMatches && !matches(extractor.getDocument().text().toLowerCase(), EMAIL_CONFIRMATION_KEYWORDS))
+				return;  // no keyword matches
+			if (extractor.getInlineLinks().size() == 1) {
+				LinkExtractor.InlineLink link = extractor.getInlineLinks().get(0);
+				if (!matches(link.text.toLowerCase(), EMAIL_CONFIRMATION_LINK_BLACKLIST)) {
+					url = link.url;
+					System.out.printf("found link in html (only one): %s\n\t%s\n", link.text, url);
+				}
+			} else {
+				// check if initially-matched keywords are in any link text
+				for (LinkExtractor.InlineLink link : extractor.getInlineLinks()) {
+					String text = link.text.toLowerCase();
+					if (matches(text, EMAIL_CONFIRMATION_KEYWORDS) &&
+					    !matches(text, EMAIL_CONFIRMATION_LINK_BLACKLIST)) {
+						url = link.url;
+						System.out.printf("found link in html: %s\n\t%s\n", link.text, url);
+						break;
+					}
+				}
+				if (url == null) {
+					// look for additional less-accurate keywords
+					for (LinkExtractor.InlineLink link : extractor.getInlineLinks()) {
+						String text = link.text.toLowerCase();
+						if (matches(text, EMAIL_CONFIRMATION_LINK_KEYWORDS) &&
+						    !matches(text, EMAIL_CONFIRMATION_LINK_BLACKLIST)) {
+							url = link.url;
+							System.out.printf("found link in html (ADDITIONAL): %s\n\t%s\n", link.text, url);
+							break;
+						}
+					}
+				}
+			}
+		} else {
+			// check plain-text
+			try {
+				String text = Utils.getTextFromMessage(message);
+				if (text == null)
+					return;
+				if (!subjectMatches && !matches(text.toLowerCase(), EMAIL_CONFIRMATION_KEYWORDS))
+					return;  // no keyword matches
+				if (matches(text, EMAIL_CONFIRMATION_LINK_BLACKLIST))
+					return;  // don't accidentally unsubscribe...
+				List<String> links = Utils.extractLinksFromText(text);
+				if (links.isEmpty())
+					return;
+				for (String link : links) {
+					if (url == null || link.length() > url.length())
+						url = link;
+				}
+				if (url != null)
+					System.out.printf("found link in plain-text (of %d links)\n\t%s\n", links.size(), url);
+			} catch (MessagingException | IOException e) {
+				return;
+			}
+		}
+		if (url == null)
+			return;
+
+		// record links in database
+		List<String> urls = new ArrayList<String>(1);
+		urls.add(url);
+		try {
+			db.addLinkGroup(urls, senderDomain, from, recipientId);
+		} catch (SQLException e) {
+			logger.error("Failed to record email confirmation link to visit.", e);
+		}
+	}
+
+	/** Returns whether the given string matches any given keyword. */
+	private boolean matches(String s, String[] keywords) {
+		for (String keyword : keywords) {
+			if (s.contains(keyword))
+				return true;
+		}
+		return false;
 	}
 }

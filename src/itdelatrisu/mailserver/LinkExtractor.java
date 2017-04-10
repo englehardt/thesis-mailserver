@@ -44,11 +44,29 @@ public class LinkExtractor {
 		}
 	}
 
+	/** Inline link data. */
+	public class InlineLink {
+		/** URL. */
+		public final String url;
+
+		/** Inner text. */
+		public final String text;
+
+		/** Creates a new inline link. */
+		public InlineLink(String url, String text) {
+			this.url = url;
+			this.text = text;
+		}
+	}
+
 	/** Link types. */
 	public enum LinkType {
 		IMAGE, LINK, MEDIA, IMPORT;
 		@Override public String toString() { return this.name().toLowerCase(); }
 	}
+
+	/** Parsed document. */
+	private final Document document;
 
 	/** All links. */
 	private final List<Link> links = new ArrayList<Link>();
@@ -63,7 +81,7 @@ public class LinkExtractor {
 	private final List<String> imports = new ArrayList<String>();
 
 	/** All inline links (e.g. in 'a' tags). */
-	private final List<String> inlineLinks = new ArrayList<String>();
+	private final List<InlineLink> inlineLinks = new ArrayList<InlineLink>();
 
 	/** All other media (e.g. with 'src' keys, but not 'img' tags). */
 	private final List<String> media = new ArrayList<String>();
@@ -73,8 +91,11 @@ public class LinkExtractor {
 	 * @param html the HTML body
 	 */
 	public LinkExtractor(String html) {
-		extractLinksFromHtml(html);
+		this.document = extractLinksFromHtml(html);
 	}
+
+	/** Returns the parsed document. */
+	public Document getDocument() { return document; }
 
 	/** Returns all extracted links. */
 	public List<Link> getAllLinks() { return links; }
@@ -89,13 +110,13 @@ public class LinkExtractor {
 	public List<String> getImports() { return imports; }
 
 	/** Returns all inline links (e.g. in 'a' tags). */
-	public List<String> getInlineLinks() { return inlineLinks; }
+	public List<InlineLink> getInlineLinks() { return inlineLinks; }
 
 	/** Returns all other media (e.g. with 'src' keys, but not 'img' tags). */
 	public List<String> getMedia() { return media; }
 
 	/** Finds all links contained in an HTML body. */
-	private void extractLinksFromHtml(String html) {
+	private Document extractLinksFromHtml(String html) {
 		// parse document
 		Document doc = Jsoup.parse(html);
 
@@ -128,7 +149,7 @@ public class LinkExtractor {
 			String url = link.attr("abs:href");
 			if (!url.startsWith("http"))
 				continue;
-			inlineLinks.add(url);
+			inlineLinks.add(new InlineLink(url, link.text()));
 			links.add(new Link(url, LinkType.LINK));
 		}
 
@@ -139,6 +160,8 @@ public class LinkExtractor {
 			for (String url : cssLinks)
 				links.add(new Link(url, LinkType.IMAGE));
 		}
+
+		return doc;
 	}
 
 	/** Returns all links contained in a CSS body. */

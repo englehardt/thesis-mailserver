@@ -11,8 +11,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import javax.mail.MessagingException;
@@ -22,6 +24,9 @@ import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
 import com.google.common.net.InternetDomainName;
+import com.linkedin.urls.Url;
+import com.linkedin.urls.detection.UrlDetector;
+import com.linkedin.urls.detection.UrlDetectorOptions;
 
 /**
  * Utility methods.
@@ -100,6 +105,12 @@ public class Utils {
 		return (part == null) ? null : (String) part.getContent();
 	}
 
+	/** Returns the plain-text section of a MIME message, or null if not found. */
+	public static String getTextFromMessage(MimeMessage message) throws MessagingException, IOException {
+		Part part = getPartFromMessage(message, "text/plain");
+		return (part == null) ? null : (String) part.getContent();
+	}
+
 	/** Returns the specified Part (by MIME type) from the given message, or null if not found. */
 	private static Part getPartFromMessage(Part message, String contentType) throws MessagingException, IOException {
 		if (message.getContentType().startsWith(contentType))
@@ -138,5 +149,11 @@ public class Utils {
 		try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(compressed))) {
 			return streamToString(gis);
 		}
+	}
+
+	/** Extracts all links from the given text. */
+	public static List<String> extractLinksFromText(String s) {
+		UrlDetector parser = new UrlDetector(s, UrlDetectorOptions.Default);
+		return parser.detect().stream().map(Url::getFullUrl).collect(Collectors.toList());
 	}
 }
