@@ -392,10 +392,8 @@ public class MailAnalyzer {
 				return;  // no keyword matches
 			if (extractor.getInlineLinks().size() == 1) {
 				LinkExtractor.InlineLink link = extractor.getInlineLinks().get(0);
-				if (!matches(link.text.toLowerCase(), EMAIL_CONFIRMATION_LINK_BLACKLIST)) {
+				if (!matches(link.text.toLowerCase(), EMAIL_CONFIRMATION_LINK_BLACKLIST))
 					url = link.url;
-					System.out.printf("found link in html (only one): %s\n\t%s\n", link.text, url);
-				}
 			} else {
 				// check if initially-matched keywords are in any link text
 				for (LinkExtractor.InlineLink link : extractor.getInlineLinks()) {
@@ -403,7 +401,6 @@ public class MailAnalyzer {
 					if (matches(text, EMAIL_CONFIRMATION_KEYWORDS) &&
 					    !matches(text, EMAIL_CONFIRMATION_LINK_BLACKLIST)) {
 						url = link.url;
-						System.out.printf("found link in html: %s\n\t%s\n", link.text, url);
 						break;
 					}
 				}
@@ -414,7 +411,6 @@ public class MailAnalyzer {
 						if (matches(text, EMAIL_CONFIRMATION_LINK_KEYWORDS) &&
 						    !matches(text, EMAIL_CONFIRMATION_LINK_BLACKLIST)) {
 							url = link.url;
-							System.out.printf("found link in html (ADDITIONAL): %s\n\t%s\n", link.text, url);
 							break;
 						}
 					}
@@ -437,8 +433,6 @@ public class MailAnalyzer {
 					if (url == null || link.length() > url.length())
 						url = link;
 				}
-				if (url != null)
-					System.out.printf("found link in plain-text (of %d links)\n\t%s\n", links.size(), url);
 			} catch (MessagingException | IOException e) {
 				return;
 			}
