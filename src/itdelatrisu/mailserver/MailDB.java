@@ -28,18 +28,20 @@ public class MailDB {
 
 	/** Represents a mail user. */
 	public class MailUser {
-		private final int id;
+		private final int id, emailCount, leakCount;
 		private final String email, site, url, urlDomain;
 		private final Date ts;
 
 		/** Constructor. */
-		public MailUser(int id, String email, String site, String url, String urlDomain, Date ts) {
+		public MailUser(int id, String email, String site, String url, String urlDomain, Date ts, int emailCount, int leakCount) {
 			this.id = id;
 			this.email = email;
 			this.site = site;
 			this.url = url;
 			this.urlDomain = urlDomain;
 			this.ts = ts;
+			this.emailCount = emailCount;
+			this.leakCount = leakCount;
 		}
 
 		/** Returns the unique user ID. */
@@ -59,6 +61,12 @@ public class MailDB {
 
 		/** Returns the registration date. */
 		public Date getRegistrationDate() { return ts; }
+
+		/** Returns the number of emails this user received (may be out of date). */
+		public int getReceivedEmailCount() { return emailCount; }
+
+		/** Returns the number of times the user's email address was leaked (may be out of date). */
+		public int getLeakCount() { return leakCount; }
 	}
 
 	/** Represents a link group. */
@@ -170,11 +178,7 @@ public class MailDB {
 				try {
 					stmt.setString(5, Utils.getDomainName(redirects.get(i).toString()));
 				} catch (Exception e) {
-					try {
-						stmt.setString(5, redirects.get(i).getHost());
-					} catch (Exception e1) {
-						stmt.setString(5, "");
-					}
+					stmt.setString(5, "");
 				}
 				stmt.setString(6, truncateUrl(redirects.get(i).toString()));
 				stmt.setInt(7, i + 1);
@@ -265,14 +269,14 @@ public class MailDB {
 		try (
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-				"SELECT `id`, `register_site`, `register_url`, `register_domain`, `register_time` FROM `users` WHERE `email` = ?"
+				"SELECT `id`, `register_site`, `register_url`, `register_domain`, `register_time`, `emails_received`, `leak_count` FROM `users` WHERE `email` = ?"
 			);
 		) {
 			stmt.setString(1, email);
 			stmt.executeQuery();
 			try (ResultSet rs = stmt.executeQuery()) {
 				return (!rs.next()) ? null :
-					new MailUser(rs.getInt(1), email, rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5));
+					new MailUser(rs.getInt(1), email, rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5), rs.getInt(6), rs.getInt(7));
 			}
 		}
 	}
@@ -282,14 +286,14 @@ public class MailDB {
 		try (
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-				"SELECT `email`, `register_site`, `register_url`, `register_domain`, `register_time` FROM `users` WHERE `id` = ?"
+				"SELECT `email`, `register_site`, `register_url`, `register_domain`, `register_time`, `emails_received`, `leak_count` FROM `users` WHERE `id` = ?"
 			);
 		) {
 			stmt.setInt(1, id);
 			stmt.executeQuery();
 			try (ResultSet rs = stmt.executeQuery()) {
 				return (!rs.next()) ? null :
-					new MailUser(id, rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5));
+					new MailUser(id, rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5), rs.getInt(6), rs.getInt(7));
 			}
 		}
 	}
@@ -300,11 +304,11 @@ public class MailDB {
 			Connection connection = getConnection();
 			Statement stmt = connection.createStatement();
 		) {
-			String sql = "SELECT `id`, `email`, `register_site`, `register_url`, `register_domain`, `register_time` FROM `users`";
+			String sql = "SELECT `id`, `email`, `register_site`, `register_url`, `register_domain`, `register_time`, `emails_received`, `leak_count` FROM `users`";
 			List<MailUser> users = new ArrayList<MailUser>();
 			try (ResultSet rs = stmt.executeQuery(sql)) {
 				while (rs.next())
-					users.add(new MailUser(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getTimestamp(6)));
+					users.add(new MailUser(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getTimestamp(6), rs.getInt(7), rs.getInt(8)));
 			}
 			return users;
 		}

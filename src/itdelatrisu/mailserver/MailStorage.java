@@ -47,9 +47,9 @@ public class MailStorage {
 	}
 
 	/** Stores the message. */
-	public void store(String from, String recipient, String data) {
-		// {root_mail_dir}/{recipient}/{timestamp}.eml
-		File dir = new File(mailDir, Utils.cleanFileName(recipient.toLowerCase(), '_'));
+	public void store(String from, MailDB.MailUser user, String data) {
+		// {root_mail_dir}/{email}/{timestamp}.eml
+		File dir = new File(mailDir, Utils.cleanFileName(user.getEmail(), '_'));
 		if (!dir.isDirectory() && !dir.mkdirs()) {
 			logger.error("Failed to create mail directory '{}'.", dir.getAbsolutePath());
 			dir = mailDir;
@@ -75,7 +75,7 @@ public class MailStorage {
 			logger.error("Failed to parse message.", e);
 		}
 		try {
-			db.addMailEntry(recipient, from, sentDate, subject, file.getName());
+			db.addMailEntry(user.getEmail(), from, sentDate, subject, file.getName());
 		} catch (SQLException e) {
 			logger.error("Failed to log message to database.", e);
 		}

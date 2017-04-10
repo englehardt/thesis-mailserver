@@ -123,10 +123,14 @@ public class Utils {
 		String hostname = new URL(url).getHost();
 		if (hostname == null)
 			return null;
-		InternetDomainName idn = InternetDomainName.from(hostname);
-		if (idn.isPublicSuffix())
-			return idn.toString();
-		return idn.topPrivateDomain().toString();
+		try {
+			InternetDomainName idn = InternetDomainName.from(hostname);
+			if (idn.isPublicSuffix())
+				return idn.toString();
+			return idn.topPrivateDomain().toString();
+		} catch (Exception e) {
+			return hostname;
+		}
 	}
 
 	/** Decompresses a GZIP byte array into a String. */

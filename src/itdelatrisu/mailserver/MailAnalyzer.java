@@ -101,7 +101,10 @@ public class MailAnalyzer {
 	public void shutdown() { pool.shutdown(); }
 
 	/** Analyzes the mail. */
-	public void analyze(String from, String recipient, String data) {
+	public void analyze(String from, MailDB.MailUser user, String data) {
+		if (user.getRegistrationSiteDomain() == null || user.getRegistrationSiteDomain().isEmpty())
+			return;
+
 		// extract HTML from the email
 		String html;
 		try {
@@ -117,34 +120,16 @@ public class MailAnalyzer {
 		// extract URLs
 		LinkExtractor extractor = new LinkExtractor(html);
 
-		// get recipient's user info
-		int recipientId;
-		String senderDomain;
-		try {
-			MailDB.MailUser user = db.getUserInfo(recipient);
-			if (user == null) {
-				logger.error("No user entry for email '{}'.", recipient);
-				return;
-			}
-			recipientId = user.getId();
-			if (user.getRegistrationSiteUrl() == null)
-				return;
-			senderDomain = Utils.getDomainName(user.getRegistrationSiteUrl());
-		} catch (Exception e) {
-			logger.error("Failed to get user info for email '{}'.", recipient);
-			return;
-		}
-
 		// find leaked email addresses
-		List<HashChecker.NamedValue<String>> encodings = HashChecker.getEncodings(recipient);
+		List<HashChecker.NamedValue<String>> encodings = HashChecker.getEncodings(user.getEmail());
 		for (LinkExtractor.Link link : extractor.getAllLinks())
-			findLeakedEmailAddress(link.url, link.type.toString(), encodings, false, recipientId, senderDomain, from);
+			findLeakedEmailAddress(link.url, link.type.toString(), encodings, false, user.getId(), user.getRegistrationSiteDomain(), from);
 
 		// request tracking images
-		requestTrackingImages(extractor, from, recipient, recipientId, senderDomain, encodings);
+		requestTrackingImages(extractor, from, user.getId(), user.getRegistrationSiteDomain(), encodings);
 
 		// record links to visit
-		recordLinksToVisit(extractor, from, recipient, recipientId, senderDomain, from, encodings);
+		recordLinksToVisit(extractor, from, user.getId(), user.getRegistrationSiteDomain(), from, encodings);
 	}
 
 	/** Finds leaked email addresses in the given URL. */
@@ -175,7 +160,6 @@ public class MailAnalyzer {
 	private void requestTrackingImages(
 		LinkExtractor extractor,
 		String from,
-		String recipient,
 		int recipientId,
 		String senderDomain,
 		List<HashChecker.NamedValue<String>> encodings
@@ -241,7 +225,6 @@ public class MailAnalyzer {
 	private void recordLinksToVisit(
 		LinkExtractor extractor,
 		String from,
-		String recipient,
 		int recipientId,
 		String senderDomain,
 		String senderAddress,

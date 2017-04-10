@@ -40,10 +40,23 @@ public class MailHandler {
 
 	/** Handles the message. */
 	public void handleMessage(String from, String recipient, String data) {
+		// get user info
+		MailDB.MailUser user;
+		try {
+			user = db.getUserInfo(recipient);
+		} catch (SQLException e) {
+			logger.error("Failed to query database.", e);
+			return;
+		}
+		if (user == null) {
+			logger.error("No user entry for email '{}'.", recipient);
+			return;
+		}
+
 		// store mail on disk
-		storage.store(from, recipient, data);
+		storage.store(from, user, data);
 
 		// analyze mail
-		analyzer.analyze(from, recipient, data);
+		analyzer.analyze(from, user, data);
 	}
 }
