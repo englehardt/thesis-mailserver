@@ -28,12 +28,15 @@ public class MailDB {
 
 	/** Represents a mail user. */
 	public class MailUser {
-		private final int id, emailCount, leakCount;
+		private final int id, emailCount, leakCount, tpLeakCount;
 		private final String email, site, url, urlDomain;
 		private final Date ts;
 
 		/** Constructor. */
-		public MailUser(int id, String email, String site, String url, String urlDomain, Date ts, int emailCount, int leakCount) {
+		public MailUser(
+			int id, String email, String site, String url, String urlDomain, Date ts,
+			int emailCount, int leakCount, int tpLeakCount
+		) {
 			this.id = id;
 			this.email = email;
 			this.site = site;
@@ -42,6 +45,7 @@ public class MailDB {
 			this.ts = ts;
 			this.emailCount = emailCount;
 			this.leakCount = leakCount;
+			this.tpLeakCount = tpLeakCount;
 		}
 
 		/** Returns the unique user ID. */
@@ -67,6 +71,9 @@ public class MailDB {
 
 		/** Returns the number of times the user's email address was leaked (may be out of date). */
 		public int getLeakCount() { return leakCount; }
+
+		/** Returns the number of times the user's email address was leaked to a third party (may be out of date). */
+		public int getThirdPartyLeakCount() { return tpLeakCount; }
 	}
 
 	/** Represents a link group. */
@@ -212,11 +219,13 @@ public class MailDB {
 			stmt.setInt(3, recipientId);
 			stmt.setString(4, encoding);
 			stmt.setString(5, truncateUrl(url));
+			String urlDomain;
 			try {
-				stmt.setString(6, Utils.getDomainName(url));
+				urlDomain = Utils.getDomainName(url);
 			} catch (Exception e) {
-				stmt.setString(6, "");
+				urlDomain = "";
 			}
+			stmt.setString(6, urlDomain);
 			stmt.setString(7, type);
 			stmt.setBoolean(8, isRedirect);
 			stmt.setBoolean(9, isIntentional);
@@ -224,6 +233,17 @@ public class MailDB {
 
 			stmtUpdate.setInt(1, recipientId);
 			stmtUpdate.executeUpdate();
+
+			if (!urlDomain.isEmpty() && !senderDomain.equals(urlDomain)) {
+				try (
+					PreparedStatement stmtUpdateTp = connection.prepareStatement(
+						"UPDATE `users` SET `tp_leak_count` = `tp_leak_count` + 1 WHERE `id` = ?"
+					);
+				) {
+					stmtUpdateTp.setInt(1, recipientId);
+					stmtUpdateTp.executeUpdate();
+				}
+			}
 		}
 	}
 
@@ -269,14 +289,14 @@ public class MailDB {
 		try (
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-				"SELECT `id`, `register_site`, `register_url`, `register_domain`, `register_time`, `emails_received`, `leak_count` FROM `users` WHERE `email` = ?"
+				"SELECT `id`, `register_site`, `register_url`, `register_domain`, `register_time`, `emails_received`, `leak_count`, `tp_leak_count` FROM `users` WHERE `email` = ?"
 			);
 		) {
 			stmt.setString(1, email);
 			stmt.executeQuery();
 			try (ResultSet rs = stmt.executeQuery()) {
 				return (!rs.next()) ? null :
-					new MailUser(rs.getInt(1), email, rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5), rs.getInt(6), rs.getInt(7));
+					new MailUser(rs.getInt(1), email, rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5), rs.getInt(6), rs.getInt(7), rs.getInt(8));
 			}
 		}
 	}
@@ -286,14 +306,14 @@ public class MailDB {
 		try (
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-				"SELECT `email`, `register_site`, `register_url`, `register_domain`, `register_time`, `emails_received`, `leak_count` FROM `users` WHERE `id` = ?"
+				"SELECT `email`, `register_site`, `register_url`, `register_domain`, `register_time`, `emails_received`, `leak_count`, `tp_leak_count` FROM `users` WHERE `id` = ?"
 			);
 		) {
 			stmt.setInt(1, id);
 			stmt.executeQuery();
 			try (ResultSet rs = stmt.executeQuery()) {
 				return (!rs.next()) ? null :
-					new MailUser(id, rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5), rs.getInt(6), rs.getInt(7));
+					new MailUser(id, rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getTimestamp(5), rs.getInt(6), rs.getInt(7), rs.getInt(8));
 			}
 		}
 	}
@@ -304,11 +324,11 @@ public class MailDB {
 			Connection connection = getConnection();
 			Statement stmt = connection.createStatement();
 		) {
-			String sql = "SELECT `id`, `email`, `register_site`, `register_url`, `register_domain`, `register_time`, `emails_received`, `leak_count` FROM `users`";
+			String sql = "SELECT `id`, `email`, `register_site`, `register_url`, `register_domain`, `register_time`, `emails_received`, `leak_count`, `tp_leak_count` FROM `users`";
 			List<MailUser> users = new ArrayList<MailUser>();
 			try (ResultSet rs = stmt.executeQuery(sql)) {
 				while (rs.next())
-					users.add(new MailUser(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getTimestamp(6), rs.getInt(7), rs.getInt(8)));
+					users.add(new MailUser(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getTimestamp(6), rs.getInt(7), rs.getInt(8), rs.getInt(9)));
 			}
 			return users;
 		}

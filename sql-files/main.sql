@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 	`register_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'registration time',
 	`emails_received` INT(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'number of emails received',
 	`leak_count` INT(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'number of times this email address was leaked',
+	`tp_leak_count` INT(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'number of times this email address was leaked to a third party',
 	PRIMARY KEY (`id`)
 ) ENGINE=MyISAM;
 
