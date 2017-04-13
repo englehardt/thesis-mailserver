@@ -47,7 +47,7 @@ public class MailAnalyzer {
 
 	/** Blacklisted keywords in link text for email confirmation. */
 	private static final String[] EMAIL_CONFIRMATION_LINK_BLACKLIST = new String[] {
-		"unsubscribe", "view"
+		"unsubscribe", "view", "cancel"
 	};
 
 	/** Blacklisted keywords in email subject for email confirmation. */
