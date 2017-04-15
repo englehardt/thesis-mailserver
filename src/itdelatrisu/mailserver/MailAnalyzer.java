@@ -37,7 +37,7 @@ public class MailAnalyzer {
 
 	/** Keywords for email confirmation. */
 	private static final String[] EMAIL_CONFIRMATION_KEYWORDS = new String[] {
-		"confirm", "verify", "validate"
+		"confirm", "verify", "validate", "activate"
 	};
 
 	/** Additional keywords in link text for email confirmation. */
@@ -47,12 +47,12 @@ public class MailAnalyzer {
 
 	/** Blacklisted keywords in link text for email confirmation. */
 	private static final String[] EMAIL_CONFIRMATION_LINK_BLACKLIST = new String[] {
-		"unsubscribe", "view", "cancel"
+		"unsubscribe", "view", "cancel", "deactivate"
 	};
 
 	/** Blacklisted keywords in email subject for email confirmation. */
 	private static final String[] EMAIL_CONFIRMATION_SUBJECT_BLACKLIST = new String[] {
-		"confirmed", "subscribed"
+		"confirmed", "subscribed", "activated"
 	};
 
 	/** The database instance. */
