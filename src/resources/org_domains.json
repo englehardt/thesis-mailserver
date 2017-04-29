@@ -63,10 +63,12 @@
 			"acxiom-online.com",
 			"acxiom.com",
 			"liveramp.com",
-			"rlcdn.com"
+			"rlcdn.com",
+			"pippio.com"
 		],
 		"subsidiaries"	:	[
-			"LiveRamp"
+			"LiveRamp",
+			"Arbor"
 		]
 	},
 	{
@@ -503,6 +505,16 @@
 		]
 	},
 	{
+		"organization"	:	"BloomReach",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"brsrvr.com"
+		],
+		"subsidiaries"	:	[
+		]
+	},
+	{
 		"organization"	:	"Brightcove",
 		"notes"			:	"",
 		"country"		:	"US",
@@ -565,6 +577,16 @@
 		],
 		"subsidiaries"	:	[
 			"SiteScout"
+		]
+	},
+	{
+		"organization"	:	"Certona",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"res-x.com"
+		],
+		"subsidiaries"	:	[
 		]
 	},
 	{
@@ -770,6 +792,16 @@
 		]
 	},
 	{
+		"organization"	:	"Demandbase",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"company-target.com"
+		],
+		"subsidiaries"	:	[
+		]
+	},
+	{
 		"organization"	:	"Deutsche Telekom",
 		"notes"			:	"D-T is the parent of Emetriq",
 		"country"		:	"DE",
@@ -782,6 +814,16 @@
 		"subsidiaries"	:	[
 			"emetriq",
 			"xplosion interactive"
+		]
+	},
+	{
+		"organization"	:	"Digilant",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"wtp101.com"
+		],
+		"subsidiaries"	:	[
 		]
 	},
 	{
@@ -1662,6 +1704,18 @@
 		]
 	},
 	{
+		"organization"	:	"LiveIntent",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"liadm.com",
+			"licasd.com",
+			"mojn.com"
+		],
+		"subsidiaries"	:	[
+		]
+	},
+	{
 		"organization"	:	"Lotame",
 		"notes"			:	"",
 		"country"		:	"US",
@@ -1728,7 +1782,8 @@
 		"country"		:	"US",
 		"domains"		:	[
 			"mathtag.com",
-			"mediamath.com"
+			"mediamath.com",
+			"pixel.mathtag.com"
 		],
 		"subsidiaries"	:	[
 		]
@@ -2325,6 +2380,16 @@
 		]
 	},
 	{
+		"organization"	:	"SOASTA",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"mpstat.us"
+		],
+		"subsidiaries"	:	[
+		]
+	},
+	{
 		"organization"	:	"Sogou",
 		"notes"			:	"",
 		"country"		:	"CN",
@@ -2641,7 +2706,8 @@
 		"country"		:	"US",
 		"domains"		:	[
 			"twimg.com",
-			"twitter.com"
+			"twitter.com",
+			"ads-twitter.com"
 		],
 		"subsidiaries"	:	[
 		]

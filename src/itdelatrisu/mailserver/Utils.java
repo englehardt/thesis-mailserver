@@ -23,6 +23,7 @@ import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
+import com.google.common.io.Resources;
 import com.google.common.net.InternetDomainName;
 import com.linkedin.urls.Url;
 import com.linkedin.urls.detection.UrlDetector;
@@ -70,6 +71,11 @@ public class Utils {
 	/** Reads the file and returns the data as a string. */
 	public static String fileToString(String path, Charset encoding) throws IOException {
 		return new String(Files.readAllBytes(Paths.get(path)), encoding);
+	}
+
+	/** Reads the resource and returns the data as a string. */
+	public static String resourceToString(String res, Charset encoding) throws IOException {
+		return Resources.toString(Resources.getResource(res), encoding);
 	}
 
 	/** Parses mail data into a MimeMessage. */
