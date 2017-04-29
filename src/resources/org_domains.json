@@ -400,7 +400,9 @@
 		"domains"		:	[
 			"gravatar.com",
 			"wordpress.com",
-			"wp.com"
+			"wp.com",
+			"wordpress.org",
+			"w.org"
 		],
 		"subsidiaries"	:	[
 			"Wordpress"
@@ -1362,7 +1364,16 @@
 			"youtu.be",
 			"youtube.com",
 			"youtubeeducation.com",
-			"ytimg.com"
+			"ytimg.com",
+			"googlevideo.com",
+			"ajax.googleapis.com",
+			"translate.googleapis.com",
+			"fonts.googleapis.com",
+			"maps.googleapis.com",
+			"storage.googleapis.com",
+			"imasdk.googleapis.com",
+			"pubsub.googleapis.com",
+			"commondatastorage.googleapis.com"
 		],
 		"subsidiaries"	:	[
 			"AdSense",
@@ -1704,6 +1715,26 @@
 		]
 	},
 	{
+		"organization"	:	"Listrak",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"listrak.com"
+		],
+		"subsidiaries"	:	[
+		]
+	},
+	{
+		"organization"	:	"Litmus",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"emltrk.com"
+		],
+		"subsidiaries"	:	[
+		]
+	},
+	{
 		"organization"	:	"LiveIntent",
 		"notes"			:	"",
 		"country"		:	"US",
@@ -1885,6 +1916,17 @@
 		"country"		:	"US",
 		"domains"		:	[
 			"glam.com"
+		],
+		"subsidiaries"	:	[
+		]
+	},
+	{
+		"organization"	:	"Monetate",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"monetate.com",
+			"monetate.net"
 		],
 		"subsidiaries"	:	[
 		]
@@ -2202,6 +2244,16 @@
 		"domains"		:	[
 			"reson8.com",
 			"resonateinsights.com"
+		],
+		"subsidiaries"	:	[
+		]
+	},
+	{
+		"organization"	:	"RichRelevance",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"richrelevance.com"
 		],
 		"subsidiaries"	:	[
 		]
@@ -2547,6 +2599,27 @@
 		]
 	},
 	{
+		"organization"	:	"Tealium",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"tealium.com",
+			"tiqcdn.com"
+		],
+		"subsidiaries"	:	[
+		]
+	},
+	{
+		"organization"	:	"TellApart",
+		"notes"			:	"",
+		"country"		:	"US",
+		"domains"		:	[
+			"tellapart.com"
+		],
+		"subsidiaries"	:	[
+		]
+	},
+	{
 		"organization"	:	"Tencent",
 		"notes"			:	"",
 		"country"		:	"CN",
@@ -2707,7 +2780,8 @@
 		"domains"		:	[
 			"twimg.com",
 			"twitter.com",
-			"ads-twitter.com"
+			"ads-twitter.com",
+			"t.co"
 		],
 		"subsidiaries"	:	[
 		]
