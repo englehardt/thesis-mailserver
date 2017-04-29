@@ -216,7 +216,7 @@ public class MailDB {
 		try (
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-				"INSERT INTO `leaked_emails` VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)"
+				"INSERT INTO `leaked_emails` VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 			);
 			PreparedStatement stmtUpdate = connection.prepareStatement(
 				"UPDATE `users` SET `leak_count` = `leak_count` + 1 WHERE `id` = ?"
