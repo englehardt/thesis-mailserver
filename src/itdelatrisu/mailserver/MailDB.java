@@ -26,6 +26,9 @@ public class MailDB {
 	/** The data source. */
 	private final BasicDataSource dataSource;
 
+	/** The organization domains manager. */
+	private final OrganizationDomains orgs;
+
 	/** Represents a mail user. */
 	public class MailUser {
 		private final int id, emailCount, leakCount, tpLeakCount;
@@ -110,11 +113,13 @@ public class MailDB {
 
 	/** Initializes the connection pool. */
 	public MailDB(String driver, String url, String username, String password) {
-		dataSource = new BasicDataSource();
+		this.dataSource = new BasicDataSource();
 		dataSource.setDriverClassName(driver);
 		dataSource.setUrl(url);
 		dataSource.setUsername(username);
 		dataSource.setPassword(password);
+
+		this.orgs = new OrganizationDomains();
 	}
 
 	/** Returns a database connection. */
@@ -172,7 +177,7 @@ public class MailDB {
 		try (
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-				"INSERT INTO `redirects` VALUES(?, ?, ?, ?, ?, ?, ?)"
+				"INSERT INTO `redirects` VALUES(?, ?, ?, ?, ?, ?, ?, ?)"
 			);
 		) {
 			String requestUrl = req.getURL().toString();
@@ -182,13 +187,16 @@ public class MailDB {
 				stmt.setString(2, senderAddress);
 				stmt.setInt(3, recipientId);
 				stmt.setString(4, truncateUrl(requestUrl));
+				String redirectDomain;
 				try {
-					stmt.setString(5, Utils.getDomainName(redirects.get(i).toString()));
+					redirectDomain = Utils.getDomainName(redirects.get(i).toString());
 				} catch (Exception e) {
-					stmt.setString(5, "");
+					redirectDomain = "";
 				}
-				stmt.setString(6, truncateUrl(redirects.get(i).toString()));
-				stmt.setInt(7, i + 1);
+				stmt.setString(5, redirectDomain);
+				stmt.setString(6, redirectDomain.isEmpty() ? null : orgs.getOrganizationForDomain(redirectDomain));
+				stmt.setString(7, truncateUrl(redirects.get(i).toString()));
+				stmt.setInt(8, i + 1);
 				stmt.executeUpdate();
 			}
 		}
@@ -226,9 +234,10 @@ public class MailDB {
 				urlDomain = "";
 			}
 			stmt.setString(6, urlDomain);
-			stmt.setString(7, type);
-			stmt.setBoolean(8, isRedirect);
-			stmt.setBoolean(9, isIntentional);
+			stmt.setString(7, urlDomain.isEmpty() ? null : orgs.getOrganizationForDomain(urlDomain));
+			stmt.setString(8, type);
+			stmt.setBoolean(9, isRedirect);
+			stmt.setBoolean(10, isIntentional);
 			stmt.executeUpdate();
 
 			stmtUpdate.setInt(1, recipientId);
