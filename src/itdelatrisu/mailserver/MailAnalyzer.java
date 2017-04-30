@@ -50,6 +50,11 @@ public class MailAnalyzer {
 		"unsubscribe", "view", "cancel", "deactivate"
 	};
 
+	/** Blacklisted keywords in link URLs for email confirmation. */
+	private static final String[] EMAIL_CONFIRMATION_LINK_URL_BLACKLIST = new String[] {
+		"unsubscribe", "deactivate"
+	};
+
 	/** Blacklisted keywords in email subject for email confirmation. */
 	private static final String[] EMAIL_CONFIRMATION_SUBJECT_BLACKLIST = new String[] {
 		"confirmed", "subscribed", "activated"
@@ -392,14 +397,16 @@ public class MailAnalyzer {
 				return;  // no keyword matches
 			if (extractor.getInlineLinks().size() == 1) {
 				LinkExtractor.InlineLink link = extractor.getInlineLinks().get(0);
-				if (!matches(link.text.toLowerCase(), EMAIL_CONFIRMATION_LINK_BLACKLIST))
+				if (!matches(link.text.toLowerCase(), EMAIL_CONFIRMATION_LINK_BLACKLIST) &&
+				    !matches(link.url.toLowerCase(), EMAIL_CONFIRMATION_LINK_URL_BLACKLIST))
 					url = link.url;
 			} else {
 				// check if initially-matched keywords are in any link text
 				for (LinkExtractor.InlineLink link : extractor.getInlineLinks()) {
 					String text = link.text.toLowerCase();
 					if (matches(text, EMAIL_CONFIRMATION_KEYWORDS) &&
-					    !matches(text, EMAIL_CONFIRMATION_LINK_BLACKLIST)) {
+					    !matches(text, EMAIL_CONFIRMATION_LINK_BLACKLIST) &&
+					    !matches(link.url.toLowerCase(), EMAIL_CONFIRMATION_LINK_URL_BLACKLIST)) {
 						url = link.url;
 						break;
 					}
@@ -409,7 +416,8 @@ public class MailAnalyzer {
 					for (LinkExtractor.InlineLink link : extractor.getInlineLinks()) {
 						String text = link.text.toLowerCase();
 						if (matches(text, EMAIL_CONFIRMATION_LINK_KEYWORDS) &&
-						    !matches(text, EMAIL_CONFIRMATION_LINK_BLACKLIST)) {
+						    !matches(text, EMAIL_CONFIRMATION_LINK_BLACKLIST) &&
+						    !matches(link.url.toLowerCase(), EMAIL_CONFIRMATION_LINK_URL_BLACKLIST)) {
 							url = link.url;
 							break;
 						}
