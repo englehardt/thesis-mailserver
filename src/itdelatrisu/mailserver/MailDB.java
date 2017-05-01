@@ -23,6 +23,9 @@ public class MailDB {
 	/** Maximum allowed length of a URL. */
 	private static final int MAX_URL_LENGTH = 2048;
 
+	/** Maximum allowed length of a domain name. */
+	private static final int MAX_DOMAIN_LENGTH = 255;
+
 	/** The data source. */
 	private final BasicDataSource dataSource;
 
@@ -190,6 +193,8 @@ public class MailDB {
 				String redirectDomain;
 				try {
 					redirectDomain = Utils.getDomainName(redirects.get(i).toString());
+					if (redirectDomain.length() > MAX_DOMAIN_LENGTH)
+						redirectDomain = "";
 				} catch (Exception e) {
 					redirectDomain = "";
 				}
@@ -230,6 +235,8 @@ public class MailDB {
 			String urlDomain;
 			try {
 				urlDomain = Utils.getDomainName(url);
+				if (urlDomain.length() > MAX_DOMAIN_LENGTH)
+					urlDomain = "";
 			} catch (Exception e) {
 				urlDomain = "";
 			}
